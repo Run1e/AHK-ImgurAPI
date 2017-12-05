@@ -1,12 +1,11 @@
 ﻿Class ImageType {
 	static Extensions := ["JPG", "JPEG", "PNG", "GIF", "APNG", "TIFF", "PDF"]
-	static AllowMissingFiles := true
 	
 	__New(Client, File := "") {
 		SplitPath, File,,, Ext
 		
 		; check if file exists
-		if !FileExist(File) && !this.AllowMissingFiles
+		if !FileExist(File)
 			throw new Imgur.Errors.MissingFileError(File)
 		
 		; check if its filetype is recognized by imgur
@@ -16,6 +15,13 @@
 		
 		this.Client := Client
 		this.File := File
-		this.Upload := this.Client.Upload.Bind(this.Client, this)
+	}
+	
+	Upload() {
+		this.Client.Upload(this)
+	}
+	
+	__Delete() {
+		this.Client.Print("Removing ImageType instance.")
 	}
 }

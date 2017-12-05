@@ -5,30 +5,40 @@
 		try Print.Call(x*)
 	}
 	
-	Events := {"OnUploadProgress": [], "OnUploadSuccess": [], "OnUploadFail": []}
 	
 	__New(client_id) {
 		this.client_id := client_id
-		this.Errors.Client := this
 		this.Worker := new Imgur.Worker(this)
+		this.Events := {"OnUploadProgress": [], "OnUploadSuccess": [], "OnUploadFail": []}
 		
 		this.Print("New client created with key " this.client_id)
+	}
+	
+	__Delete() {
+		this.Print("Client instance removed.")
+	}
+	
+	Free() {
+		this.Worker := ""
+		this.Events := ""
 	}
 	
 	; upload image
 	Upload(Image) {
 		; check the input passed is an ImageType instance
-		if !IsInstance(Image, Imgur.ImageType)
-			throw new Imgur.Errors.TypeError("Input has to be Imgur.ImageType")
+		if !isinstance(Image, Imgur.ImageType)
+			throw new Imgur.Errors.TypeError("Input has to be an Imgur.ImageType instance.")
 		
 		; make sure the ImageType instance was instantiated from this Client
 		if (&(Image.Client) != &this)
 			throw new Imgur.Errors.ClientMismatch
 		
+		if !FileExist(Image.File)
+			throw new Imgur.Errors.MissingFileError(Image.File)
+		
 		this.Print("Uploading image: " Image.File)
 		
-		for i, f in this.Events.OnUploadSuccess
-			f.Call(Image)
+		this.CallEvent("OnUploadSuccess", Image)
 	}
 	
 	; create new ImageType instance
@@ -36,8 +46,18 @@
 		return new Imgur.ImageType(this, File)
 	}
 	
+	CallEvent(Event, Param*) {
+		this.Print("Event: " Event, Param*)
+		for i, f in this.Events[Event]
+			f.Call(Param*)
+	}
+	
 	RegisterEvent(Event, Func) {
 		this.Events[Event].Push(Func)
+	}
+	
+	ClearEvent(Event) {
+		this.Events[Event] := []
 	}
 	
 	#Include imgur\worker.ahk

@@ -15,8 +15,8 @@
 	}
 	
 	UPLOAD(Image) {
-		if (Image.base.__Class != "Imgur.ImageType")
-			throw Exception("Input has to be an instance of Imgur.ImageType", -1)
+		if !isinstance(Image, Imgur.ImageType)
+			throw new Imgur.Errors.TypeError("Input has to be Imgur.ImageType")
 		
 	}
 }

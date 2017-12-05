@@ -3,7 +3,8 @@
 }
 
 p(x*) {
-	Debug.Print(Debug.Printer(x*))
+	static First := true ; haha hackety fuckin hack
+	Debug.Print((First ? ("", First := false) : "`n") . Debug.Printer(x*))
 }
 
 t(x*) {
@@ -52,8 +53,8 @@ Class Debug {
 		
 		Call(Print*) {
 			for Index, Value in Print
-				text .= (IsObject(Value) ? this.Object(Value) : Value) . "`n"
-			return text
+				text .= "`n" . (IsObject(Value) ? this.Object(Value) : Value)
+			return SubStr(text, 2)
 		}
 		
 		Object(Object, Depth := 5, Indent := "", Seen := "") {
