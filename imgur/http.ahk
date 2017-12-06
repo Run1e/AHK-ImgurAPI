@@ -2,6 +2,11 @@
 #Persistent
 ;#NoTrayIcon
 #WarnContinuableException off
+SetBatchLines -1
+
+Get(Path, Post, Headers, Callback) {
+	
+}
 
 Upload(Image, Callback) {
 	Image := ObjShare(Image)

@@ -1,6 +1,11 @@
 ﻿#Include imgur\lib\third-party\Class JSON.ahk
 
 Class Imgur {
+	
+	#Include imgur\worker.ahk
+	#Include imgur\image.ahk
+	#Include imgur\errors.ahk
+	
 	static Endpoint := "https://api.imgur.com/3/"
 	
 	Print(x*) {
@@ -10,15 +15,21 @@ Class Imgur {
 	
 	
 	__New(client_id) {
+		this.Print("Creating new client with key " client_id)
 		this.client_id := client_id
 		this.Worker := new Imgur.WorkerBase(this)
-		this.Events := {"OnUploadProgress": [], "OnUploadSuccess": [], "OnUploadFail": []}
-		
-		this.Print("New client created with key " this.client_id)
+		this.Events := 
+		(LTrim Join
+		{
+			OnUploadProgress: [],
+			OnUploadSuccess: [],
+			OnUploadFailure: []
+		}
+		)
 	}
 	
 	__Delete() {
-		this.Print("Client instance removed.")
+		this.Print("Client instance removed")
 	}
 	
 	Free() {
@@ -39,19 +50,12 @@ Class Imgur {
 		if !FileExist(Image.File)
 			throw new Imgur.Errors.MissingFileError(Image.File)
 		
-		this.Print("Uploading image: " Image.File)
-		
 		this.Worker.Upload(Image)
 	}
 	
 	; create new ImageType instance
 	Image(File) {
 		return new Imgur.ImageType(this, File)
-	}
-	
-	CallEvent(Event, Param*) {
-		for i, f in this.Events[Event]
-			f.Call(Param*)
 	}
 	
 	RegisterEvent(Event, Func) {
@@ -62,13 +66,14 @@ Class Imgur {
 		this.Events[Event] := []
 	}
 	
-	#Include imgur\worker.ahk
-	#Include imgur\image.ahk
-	#Include imgur\errors.ahk
+	CallEvent(Event, Param*) {
+		for i, f in this.Events[Event]
+			f.Call(Param*)
+	}
 }
 
 ; checks if Instance is an instance of Class
-IsInstance(Instance, Base) {
+isinstance(Instance, Base) {
 	return Instance.base.__Class = Base.__Class
 }
 

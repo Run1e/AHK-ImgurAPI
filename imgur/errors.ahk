@@ -11,6 +11,10 @@
 		Message := "Incompatible type specified."
 	}
 	
+	Class MalformedJSON extends Imgur.Errors.BaseException {
+		Message := "JSON data from API is malformed."
+	}
+	
 	; FILES
 	
 	Class FileTypeError extends Imgur.Errors.BaseException {
@@ -19,6 +23,10 @@
 	
 	Class MissingFileError extends Imgur.Errors.BaseException {
 		Message := "File specified does not exist."
+	}
+	
+	Class FileSizeError extends Imgur.Errors.BaseException {
+		Message := "File is too large."
 	}
 	
 	; CLIENT

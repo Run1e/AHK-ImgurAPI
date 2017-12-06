@@ -5,23 +5,24 @@
 SetBatchLines -1
 SetWorkingDir % A_ScriptDir
 
+global x
+
 x := new Imgur("45a0e7fa6727f61")
 
 x.RegisterEvent("OnUploadSuccess", Func("OnUpload"))
 x.RegisterEvent("OnUploadProgress", Func("OnUploadProgress"))
-
-img := x.Image("pic.jpg")
-
-x.upload(img)
-
 return
 
+
+
 OnUpload(Image) {
-	m("Upload successful", "", Image)
+	tooltip
+	clipboard := Image.link
+	TrayTip, Upload successful!, Clipboard osv
 }
 
-OnUploadProgress(Image, a, b) {
-	t(a / b)
+OnUploadProgress(Image, Uploaded, Total) {
+	t(Image.File, Ceil(Uploaded / Total * 100))
 }
 
 Exit() {
