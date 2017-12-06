@@ -47,6 +47,7 @@ Class Debug {
 	}
 	
 	Class Printer extends Debug.Functor {
+		static IgnoreKeys := {Client: 0, Thread: 0, Script: 0}
 		static Indent := "    "
 		static OpenClose := ["[", "]"]
 		static Arrow := "->"
@@ -63,6 +64,8 @@ Class Debug {
 			if Depth
 				try {
 					for Key, Value in Object {
+						if this.IgnoreKeys.HasKey(Key)
+							continue
 						out .= "`n" Indent this.OpenClose.1 Key this.OpenClose.2
 						if IsObject(Value) {
 							if Seen.HasKey(&Value) {
@@ -73,8 +76,7 @@ Class Debug {
 						} else
 							out .= " " this.Arrow " " Value
 					}
-				} catch e
-				return
+				}
 			return SubStr(out, 2)
 		}
 	}

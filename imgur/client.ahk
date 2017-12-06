@@ -1,4 +1,7 @@
-﻿Class Imgur {
+﻿#Include imgur\lib\third-party\Class JSON.ahk
+
+Class Imgur {
+	static Endpoint := "https://api.imgur.com/3/"
 	
 	Print(x*) {
 		static Print := Func("p")
@@ -8,7 +11,7 @@
 	
 	__New(client_id) {
 		this.client_id := client_id
-		this.Worker := new Imgur.Worker(this)
+		this.Worker := new Imgur.WorkerBase(this)
 		this.Events := {"OnUploadProgress": [], "OnUploadSuccess": [], "OnUploadFail": []}
 		
 		this.Print("New client created with key " this.client_id)
@@ -38,7 +41,7 @@
 		
 		this.Print("Uploading image: " Image.File)
 		
-		this.CallEvent("OnUploadSuccess", Image)
+		this.Worker.Upload(Image)
 	}
 	
 	; create new ImageType instance
@@ -47,7 +50,6 @@
 	}
 	
 	CallEvent(Event, Param*) {
-		this.Print("Event: " Event, Param*)
 		for i, f in this.Events[Event]
 			f.Call(Param*)
 	}
