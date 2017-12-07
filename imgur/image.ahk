@@ -25,7 +25,7 @@
 	}
 	
 	__Delete() {
-		this.Client.Print("ImageType instance removed: " this.File "(" this.id ")")
+		this.Client.Print("ImageType instance removed (" this.File ", " this.id ")")
 	}
 	
 	Upload() {

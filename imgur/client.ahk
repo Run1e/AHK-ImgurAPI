@@ -3,21 +3,22 @@
 Class Imgur {
 	
 	#Include imgur\worker.ahk
+	#Include imgur\uploadworker.ahk
+	#Include imgur\requestworker.ahk
 	#Include imgur\image.ahk
 	#Include imgur\errors.ahk
 	
 	static Endpoint := "https://api.imgur.com/3/"
 	
-	Print(x*) {
-		static Print := Func("p")
-		try Print.Call(x*)
-	}
-	
-	
 	__New(client_id) {
-		this.Print("Creating new client with key " client_id)
-		this.client_id := client_id
-		this.Worker := new Imgur.WorkerBase(this)
+		this.Print("Creating new client (" client_id ")")
+		
+		this.id := client_id
+		
+		;this.Requester := new Imgur.RequestWorker(this)
+		this.Uploader := new Imgur.UploadWorker(this)
+		ObjRelease(this)
+		
 		this.Events := 
 		(LTrim Join
 		{
@@ -29,11 +30,16 @@ Class Imgur {
 	}
 	
 	__Delete() {
-		this.Print("Client instance removed")
+		this.Print("Client instance removed: (" this.id ")")
+	}
+	
+	Print(x*) {
+		p(x*)
 	}
 	
 	Free() {
-		this.Worker := ""
+		this.Uploader := ""
+		this.Requester := ""
 		this.Events := ""
 	}
 	
@@ -50,7 +56,7 @@ Class Imgur {
 		if !FileExist(Image.File)
 			throw new Imgur.Errors.MissingFileError(Image.File)
 		
-		this.Worker.Upload(Image)
+		this.Uploader.Upload(Image)
 	}
 	
 	; create new ImageType instance

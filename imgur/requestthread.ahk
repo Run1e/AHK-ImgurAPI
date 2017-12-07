@@ -4,18 +4,17 @@
 #WarnContinuableException off
 SetBatchLines -1
 
-Get(Path, Post, Headers, Callback) {
-	
-}
+finished := true
+return
 
 Upload(Image, Callback) {
 	Image := ObjShare(Image)
 	Callback := ObjShare(Callback)
 	
-	UploadFile(Client.Endpoint "image", Data := {}, Headers := {Authorization: "Client-ID " Client.client_id}, Image.File, Callback)
+	UploadFile(Client.Endpoint "image", Data := {}, Headers := {Authorization: "Client-ID " Client.id}, Image.File, Callback)
 	if !InStr(Data, """success"":true")
-		Client.Worker.UploadFailure(Image, e.Message)
-	Client.Worker.UploadSuccess(Image, Data)
+		Worker.UploadFailure(Image, e.Message)
+	Worker.UploadSuccess(Image, Data)
 }
 
 

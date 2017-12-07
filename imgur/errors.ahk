@@ -35,7 +35,7 @@
 		Message := "Client instance mismatch."
 	}
 	
-	; WORKER
+	; WORKERS
 	
 	Class WorkerLaunchFailure extends Imgur.Errors.BaseException {
 		Message := "Worker failed to launch."
