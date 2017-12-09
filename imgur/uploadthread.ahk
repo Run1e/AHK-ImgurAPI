@@ -35,7 +35,7 @@ UploadFile(URL, ByRef Data := "", ByRef Headers := "", File := "", Callback := "
 	Convert_POST_To_Codepage := 65001
 	
 	; create file
-	if !FileObj := DllCall("CreateFile" W_A, Ptr, &File, DW, 0x80000000, DW, 0, Ptr, 0, DW, 4, DW, 0, Ptr, 0, Ptr )
+	if !FileObj := DllCall("CreateFile" W_A, Ptr, &File, DW, 0x80000000, DW, 0, Ptr, 0, DW, 4, DW, 0, Ptr, 0, Ptr)
 		throw Exception("CreateFile failed", -1, File)
 	
 	; get size of file
@@ -95,11 +95,11 @@ UploadFile(URL, ByRef Data := "", ByRef Headers := "", File := "", Callback := "
 			break
 		
 		; read data from the file
-		if !err := DllCall( "ReadFile", Ptr, FileObj, Ptr, pos := &dbuffer, DW, dtsz, DW "*", dtsz, Ptr, 0 )
+		if !err := DllCall("ReadFile", Ptr, FileObj, Ptr, pos := &dbuffer, DW, dtsz, DW "*", dtsz, Ptr, 0)
 			throw Exception("ReadFile - failed reading from file", -1, err)
 		
 		; add it to post
-		if !err := DllCall( "WinINet\InternetWriteFile", Ptr, hRequest, Ptr, pos, DW, dtsz + 0, DW "*", dtsz )
+		if !err := DllCall("WinINet\InternetWriteFile", Ptr, hRequest, Ptr, pos, DW, dtsz + 0, DW "*", dtsz)
 			throw Exception("InterWriteFile - failed uploading POST data", -1, pos "`n" dtsz)
 		
 		; add total uploaded data
@@ -109,19 +109,19 @@ UploadFile(URL, ByRef Data := "", ByRef Headers := "", File := "", Callback := "
 	}
 	
 	; end request
-	DllCall( "WinINet\HttpEndRequest" W_A, Ptr, hRequest, Ptr, 0, DW, 0, Ptr, 0 )
+	DllCall("WinINet\HttpEndRequest" W_A, Ptr, hRequest, Ptr, 0, DW, 0, Ptr, 0)
 	
 	; close file handle
 	if !DllCall("CloseHandle", Ptr, FileObj)
 		throw Exception("CloseHandle failed", -1)
 	
 	; check how much data is avaliable
-	DllCall( "WinINet\InternetQueryDataAvailable", Ptr, hRequest, DW "*", FileSize, DW, 0, Ptr, 0 )
+	DllCall("WinINet\InternetQueryDataAvailable", Ptr, hRequest, DW "*", FileSize, DW, 0, Ptr, 0)
 	
 	; set memory for header string
 	VarSetCapacity(hdr, hdrsz := 4096, 0)
 	
-	if !DllCall( "WinINet\HttpQueryInfo" W_A, Ptr, hRequest, DW, 22, Ptr, &hdr, DW "*", hdrsz, Ptr, 0 )
+	if !DllCall("WinINet\HttpQueryInfo" W_A, Ptr, hRequest, DW, 22, Ptr, &hdr, DW "*", hdrsz, Ptr, 0)
 		throw Exception("HttpQueryInfo - failed getting headers", -1)
 	
 	; put output headers in Headers
@@ -158,10 +158,10 @@ UploadFile(URL, ByRef Data := "", ByRef Headers := "", File := "", Callback := "
 	}
 	
 	; close handles
-	DllCall( "WinINet\InternetCloseHandle", Ptr, hRequest )
-	DllCall( "WinINet\InternetCloseHandle", Ptr, hConnection )
-	DllCall( "WinINet\InternetCloseHandle", Ptr, hInternet )
-	DllCall( "FreeLibrary", Ptr, hWinINet )
+	DllCall("WinINet\InternetCloseHandle", Ptr, hRequest)
+	DllCall("WinINet\InternetCloseHandle", Ptr, hConnection)
+	DllCall("WinINet\InternetCloseHandle", Ptr, hInternet)
+	DllCall("FreeLibrary", Ptr, hWinINet)
 	
 	return size
 }

@@ -1,7 +1,13 @@
 ﻿Class UploadWorker extends Imgur.Worker {
 	ThreadFile := "imgur\uploadthread.ahk"
 	
-	Upload(Image) {
+	Class UploadInstance {
+		__New(Image, Callback := "") {
+			
+		}
+	}
+	
+	Upload(Image, Callback := "") {
 		if !isinstance(Image, Imgur.ImageType)
 			throw new Imgur.Errors.TypeError("Input has to be instance of Imgur.ImageType")
 		

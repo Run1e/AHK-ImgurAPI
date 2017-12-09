@@ -1,12 +1,15 @@
-﻿#Include imgur\lib\third-party\Class JSON.ahk
+﻿#Include %A_LineFile%\..\lib\third-party\JSON.ahk
+#Include %A_LineFile%\..\request\request.ahk
 
 Class Imgur {
 	
-	#Include imgur\worker.ahk
-	#Include imgur\uploadworker.ahk
-	#Include imgur\requestworker.ahk
-	#Include imgur\image.ahk
-	#Include imgur\errors.ahk
+	#Include %A_LineFile%\..\image.ahk
+	
+	#Include %A_LineFile%\..\worker.ahk
+	#Include %A_LineFile%\..\errors.ahk
+	
+	
+	#Include %A_LineFile%\..\uploadworker.ahk
 	
 	static Endpoint := "https://api.imgur.com/3/"
 	
@@ -15,18 +18,20 @@ Class Imgur {
 		
 		this.id := client_id
 		
-		;this.Requester := new Imgur.RequestWorker(this)
-		this.Uploader := new Imgur.UploadWorker(this)
-		ObjRelease(this)
-		
 		this.Events := 
 		(LTrim Join
 		{
 			OnUploadProgress: [],
 			OnUploadSuccess: [],
-			OnUploadFailure: []
+			OnUploadFailure: [],
+			OnGetImageSuccess: [],
+			OnGetImageFailure: []
 		}
 		)
+		
+		;this.Requester := new Imgur.RequestWorker(this)
+		this.Uploader := new Imgur.UploadWorker(this)
+		this.Requester := new Imgur.RequestWorker(this)
 	}
 	
 	__Delete() {
@@ -44,7 +49,7 @@ Class Imgur {
 	}
 	
 	; upload image
-	Upload(Image) {
+	Upload(Image, Callback := "") {
 		; check the input passed is an ImageType instance
 		if !isinstance(Image, Imgur.ImageType)
 			throw new Imgur.Errors.TypeError("Input has to be an Imgur.ImageType instance.")
@@ -60,8 +65,50 @@ Class Imgur {
 	}
 	
 	; create new ImageType instance
-	Image(File) {
+	NewImage(File := "") {
 		return new Imgur.ImageType(this, File)
+	}
+	
+	GetImage(ImageHash, Callback := "") {
+		this.Print("Getting image: " ImageHash)
+		
+		g := new Request.Get(this.Endpoint "image/" ImageHash)
+		g.OnResponse(this.GetImageResponse.Bind(this, ImageHash, Callback))
+		g.AddHeader("Authorization", "Client-ID " x.ID)
+		g.Send()
+	}
+	
+	/*
+		event recipient signature:
+		on success:
+		ImageType, false
+		on failure:
+		ImageHash, Exception
+	*/
+	GetImageResponse(ImageHash, Callback, Success, Data, Headers) {
+		this.Print("GetImage response for " ImageHash ": " (Success ? "success" : "failure"))
+		
+		if Success {
+			Img := this.Image()
+			
+			try
+				DataObj := JSON.Load(Data.ResponseText)
+			catch e {
+				err := new Imgur.Errors.MalformedJSON(e.Message)
+				this.CallEvent("OnGetImageFailure", ImageHash, err)
+				Callback.Call(ImageHash, err)
+				return
+			}
+				
+			for Key, Val in DataObj.data
+				Img[Key] := Val	
+				
+			this.CallEvent("OnGetImageSuccess", Img)
+			Callback.Call(true, Img)
+		}
+		
+		this.CallEvent("OnGetImageFailure", ImageHash)
+		Callback.Call(ImageHash, true)
 	}
 	
 	RegisterEvent(Event, Func) {
