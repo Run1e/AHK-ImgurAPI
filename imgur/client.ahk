@@ -67,26 +67,6 @@ Class Imgur {
 		this.Uploader.Upload(Image, Callback)
 	}
 	
-	UploadResult(Image, Callback, Data, Headers, Error) {
-		if Error {
-			this.Client.CallEvent("OnUploadResponse", Callback, Image, Error)
-			return
-		}
-		
-		try
-			DataObj := JSON.Load(Data)
-		catch e
-			throw new Imgur.Errors.BadResponse(e.Message)
-		
-		for Key, Value in DataObj.data
-			Image[Key] := Value
-		
-		this.Print("Image successfully uploaded (" Image.File ", " Image.id ")")
-		
-		this.Client.CallEvent("OnUploadResponse", Callback, Image, false)
-		this.Next(true)
-	}
-	
 	GetImage(ImageHash, Callback := "") {
 		this.Print("GetImage for " ImageHash)
 		
@@ -97,35 +77,6 @@ Class Imgur {
 		g.OnResponse(this.GetImageResponse.Bind(this, Image, Callback))
 		g.AddHeader("Authorization", "Client-ID " this.id)
 		g.Send()
-	}
-	
-	/*
-		event recipient signature:
-		on success:
-		ImageType, false
-		on failure:
-		ImageType, Exception
-	*/
-	GetImageResponse(Image, Callback, Data, Headers, Error) {
-		this.Print("GetImageResponse for " Image.id " " (Error ? "failed" : "succeeded"))
-		
-		if Error {
-			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.BadRequest(Error))
-			return
-		}
-		
-		try
-			DataObj := JSON.Load(Data.ResponseText)
-		catch e {
-			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.MalformedJSON(e.Message))
-			return
-		}
-		
-		for Key, Val in DataObj.data
-			Image[Key] := Val
-		
-		this.CallEvent("OnGetImageResponse", Callback, Image, false)
-		
 	}
 	
 	RegisterEvent(Event, Func) {
@@ -146,6 +97,51 @@ Class Imgur {
 		else
 			for i, f in this.Events[Event]
 				f.Call(Param*)
+	}
+	
+	UploadResponse(Image, Callback, Data, Headers, Error) {
+		if Error
+			Error := ObjShare(Error)
+		
+		if Error {
+			this.Client.CallEvent("OnUploadResponse", Callback, Image, Error)
+			return
+		}
+		
+		try
+			DataObj := JSON.Load(Data)
+		catch e
+			throw new Imgur.Errors.BadResponse(e.Message)
+		
+		for Key, Value in DataObj.data
+			Image[Key] := Value
+		
+		this.Print("Image successfully uploaded (" Image.File ", " Image.id ")")
+		
+		this.Client.CallEvent("OnUploadResponse", Callback, Image, false)
+		this.Next(true)
+	}
+	
+	GetImageResponse(Image, Callback, Data, Headers, Error) {
+		this.Print("GetImageResponse for " Image.id " " (Error ? "failed" : "succeeded"))
+		
+		if Error {
+			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.BadRequest(Error))
+			return
+		}
+		
+		try
+			DataObj := JSON.Load(Data.ResponseText)
+		catch e {
+			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.MalformedJSON(e.Message))
+			return
+		}
+		
+		for Key, Val in DataObj.data
+			Image[Key] := Val
+		
+		this.CallEvent("OnGetImageResponse", Callback, Image, false)
+		
 	}
 }
 

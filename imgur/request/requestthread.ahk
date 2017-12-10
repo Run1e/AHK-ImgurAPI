@@ -36,7 +36,7 @@ Send() {
 	HTTP.Send(SubStr(Post, 2))
 	
 	if !HTTP.WaitForResponse(Req.Timeout)
-		return Req.Callback.Call("", "", "Request timed out")
+		return Req.Callback.Call("", "", ObjShare(Exception("Request timed out", -1, "Timeout: " Req.Timeout)))
 	
 	Res := {}
 	for Index, Value in ["Status", "StatusText", "ResponseText", "ResponseBody"]
@@ -45,11 +45,11 @@ Send() {
 	for Index, Header in StrSplit(HTTP.GetAllResponseHeaders(), "`n"), Out := {}
 		if StrLen((HDR := StrSplit(Header, ": ")).1)
 			Out[HDR.1] := HDR.2
-		
+	
 	if (Res.Status = 200)
 		Req.Callback.Call(Res, Out, false)
 	else
-		Req.Callback.Call(Res, Out, "Request status is " Res.Status)
+		Req.Callback.Call(Res, Out, ObjShare(Exception("Status not OK", -1, Req.Status)))
 }
 
 UriEncode(Uri) {

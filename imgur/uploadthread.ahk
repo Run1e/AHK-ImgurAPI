@@ -14,13 +14,13 @@ Upload(Image, Callback, ProgressCallback) {
 	Callback := ObjShare(Callback)
 	ProgressCallback := ObjShare(ProgressCallback)
 	
-	if !UploadFile(Client.Endpoint "image", Data := "", Headers := {Authorization: "Client-ID " Client.id}, Image.File, ProgressCallback)
-		Error := "No response"
+	try {
+		if !UploadFile(Client.Endpoint "image", Data := "", Headers := {Authorization: "Client-ID " Client.id}, Image.File, ProgressCallback)
+			return Callback.Call(Data, Headers, ObjShare(Exception("No response", -1)))
+	} catch e
+		return Callback.Call(Data, Headers, ObjShare(e))
 	
-	if Error
-		Callback.Call(Data, Headers, Error)
-	else
-		Callback.Call(Data, Headers, false)
+	Callback.Call(Data, Headers, false)
 }
 
 
@@ -69,7 +69,7 @@ UploadFile(URL, ByRef Data := "", ByRef Headers := "", File := "", Callback := "
 	if !hConnection := DllCall("WinINet\InternetConnect" W_A, Ptr, hInternet, Ptr, &Host, DW, Port, Ptr, "", Ptr, "", DW, 3, DW, Flags, DW, 0, Ptr)
 		throw Exception("InternetConnect failed", -1, hConnection)
 	
-	if !hRequest := DllCall("WinINet\HttpOpenRequest" W_A, Ptr, hConnection, Ptr, &Method, Ptr, &Path, "Str", "HTTP/1.1", Ptr, 0, Ptr, 0, DW, Flags, Ptr)
+	if !hRequest := DllCall("WinINet\HttpOpenRequest" W_A, Ptr, hConnection, Ptr, &Method, Ptr, &Path, "Str", "HTTP/1.1", Ptr, 0, Ptr, 0, DW, Flags, Ptr, 0)
 		throw Exception("HttpOpenRequest failed", -1, hRequest)
 	
 	; create header string

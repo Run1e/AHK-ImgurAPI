@@ -7,10 +7,16 @@
 		}
 	}
 	
-	; HTTP
+	; REQUEST
 	
 	Class BadRequest extends Imgur.Errors.BaseException {
 		Message := "HTTP error occured."
+	}
+	
+	; UPLOADER
+	
+	Class WorkerLaunchFailure extends Imgur.Errors.BaseException {
+		Message := "Worker failed to launch."
 	}
 	
 	; MISC
@@ -41,11 +47,5 @@
 	
 	Class ClientMismatch extends Imgur.Errors.BaseException {
 		Message := "Client instance mismatch."
-	}
-	
-	; WORKERS
-	
-	Class WorkerLaunchFailure extends Imgur.Errors.BaseException {
-		Message := "Worker failed to launch."
 	}
 }

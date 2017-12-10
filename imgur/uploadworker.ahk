@@ -17,7 +17,7 @@
 		this.Print("Uploading image (" Image.File ")")
 		
 		ImageShare := ObjShare(Image)
-		CallbackShare := ObjShare(this.Client.UploadResult.Bind(this, Image, Callback))
+		CallbackShare := ObjShare(this.Client.UploadResponse.Bind(this, Image, Callback))
 		CallbackProgressShare := ObjShare(this.UploadProgress.Bind(this, Image))
 		
 		this.Thread.ahkPostFunction("Upload", ImageShare, CallbackShare, CallbackProgressShare)
