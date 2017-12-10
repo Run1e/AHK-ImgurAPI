@@ -7,6 +7,14 @@
 		}
 	}
 	
+	; HTTP
+	
+	Class BadRequest extends Imgur.Errors.BaseException {
+		Message := "HTTP error occured."
+	}
+	
+	; MISC
+	
 	Class TypeError extends Imgur.Errors.BaseException {
 		Message := "Incompatible type specified."
 	}

@@ -4,17 +4,23 @@
 #WarnContinuableException off
 SetBatchLines -1
 
+#Include *i <Debug>
+
 finished := true
 return
 
-Upload(Image, Callback) {
+Upload(Image, Callback, ProgressCallback) {
 	Image := ObjShare(Image)
 	Callback := ObjShare(Callback)
+	ProgressCallback := ObjShare(ProgressCallback)
 	
-	UploadFile(Client.Endpoint "image", Data := {}, Headers := {Authorization: "Client-ID " Client.id}, Image.File, Callback)
-	if !InStr(Data, """success"":true")
-		Worker.UploadFailure(Image, e.Message)
-	Worker.UploadSuccess(Image, Data)
+	if !UploadFile(Client.Endpoint "image", Data := "", Headers := {Authorization: "Client-ID " Client.id}, Image.File, ProgressCallback)
+		Error := "No response"
+	
+	if Error
+		Callback.Call(Data, Headers, Error)
+	else
+		Callback.Call(Data, Headers, false)
 }
 
 

@@ -31,8 +31,8 @@
 			this.Thread.ahkFunction("AddHeader", Header, Value)
 		}
 		
-		Response(Success, Data, Headers) {
-			try this.Callback.Call(Success, Data, Headers)
+		Response(Data, Headers) {
+			try this.Callback.Call(Data, Headers, Error)
 			ahkthread_free(this.Thread)
 			this.Thread := ""
 		}

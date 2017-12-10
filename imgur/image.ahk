@@ -28,7 +28,7 @@
 		this.Client.Print("ImageType instance removed (" this.File ", " this.id ")")
 	}
 	
-	Upload() {
-		this.Client.Upload(this)
+	Upload(Callback := "") {
+		this.Client.Upload(this, Callback)
 	}
 }

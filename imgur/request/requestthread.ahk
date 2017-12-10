@@ -36,7 +36,7 @@ Send() {
 	HTTP.Send(SubStr(Post, 2))
 	
 	if !HTTP.WaitForResponse(Req.Timeout)
-		return Req.Callback.Call(false)
+		return Req.Callback.Call("", "", "Request timed out")
 	
 	Res := {}
 	for Index, Value in ["Status", "StatusText", "ResponseText", "ResponseBody"]
@@ -47,9 +47,9 @@ Send() {
 			Out[HDR.1] := HDR.2
 		
 	if (Res.Status = 200)
-		Req.Callback.Call(true, Res, Out)
+		Req.Callback.Call(Res, Out, false)
 	else
-		Req.Callback.Call(false, Res, Out)
+		Req.Callback.Call(Res, Out, "Request status is " Res.Status)
 }
 
 UriEncode(Uri) {

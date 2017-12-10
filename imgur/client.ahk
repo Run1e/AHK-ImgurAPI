@@ -21,11 +21,9 @@ Class Imgur {
 		this.Events := 
 		(LTrim Join
 		{
+			OnUploadResponse: [],
 			OnUploadProgress: [],
-			OnUploadSuccess: [],
-			OnUploadFailure: [],
-			OnGetImageSuccess: [],
-			OnGetImageFailure: []
+			OnGetImageResponse: []
 		}
 		)
 		
@@ -48,6 +46,11 @@ Class Imgur {
 		this.Events := ""
 	}
 	
+	; create new ImageType instance
+	Image(File := "") {
+		return new Imgur.ImageType(this, File)
+	}
+	
 	; upload image
 	Upload(Image, Callback := "") {
 		; check the input passed is an ImageType instance
@@ -61,20 +64,38 @@ Class Imgur {
 		if !FileExist(Image.File)
 			throw new Imgur.Errors.MissingFileError(Image.File)
 		
-		this.Uploader.Upload(Image)
+		this.Uploader.Upload(Image, Callback)
 	}
 	
-	; create new ImageType instance
-	NewImage(File := "") {
-		return new Imgur.ImageType(this, File)
+	UploadResult(Image, Callback, Data, Headers, Error) {
+		if Error {
+			this.Client.CallEvent("OnUploadResponse", Callback, Image, Error)
+			return
+		}
+		
+		try
+			DataObj := JSON.Load(Data)
+		catch e
+			throw new Imgur.Errors.BadResponse(e.Message)
+		
+		for Key, Value in DataObj.data
+			Image[Key] := Value
+		
+		this.Print("Image successfully uploaded (" Image.File ", " Image.id ")")
+		
+		this.Client.CallEvent("OnUploadResponse", Callback, Image, false)
+		this.Next(true)
 	}
 	
 	GetImage(ImageHash, Callback := "") {
-		this.Print("Getting image: " ImageHash)
+		this.Print("GetImage for " ImageHash)
 		
-		g := new Request.Get(this.Endpoint "image/" ImageHash)
-		g.OnResponse(this.GetImageResponse.Bind(this, ImageHash, Callback))
-		g.AddHeader("Authorization", "Client-ID " x.ID)
+		Image := this.Image()
+		Image.id := ImageHash
+		
+		g := new Request.Get(this.Endpoint "image/" Image.id)
+		g.OnResponse(this.GetImageResponse.Bind(this, Image, Callback))
+		g.AddHeader("Authorization", "Client-ID " this.id)
 		g.Send()
 	}
 	
@@ -83,32 +104,28 @@ Class Imgur {
 		on success:
 		ImageType, false
 		on failure:
-		ImageHash, Exception
+		ImageType, Exception
 	*/
-	GetImageResponse(ImageHash, Callback, Success, Data, Headers) {
-		this.Print("GetImage response for " ImageHash ": " (Success ? "success" : "failure"))
+	GetImageResponse(Image, Callback, Data, Headers, Error) {
+		this.Print("GetImageResponse for " Image.id " " (Error ? "failed" : "succeeded"))
 		
-		if Success {
-			Img := this.Image()
-			
-			try
-				DataObj := JSON.Load(Data.ResponseText)
-			catch e {
-				err := new Imgur.Errors.MalformedJSON(e.Message)
-				this.CallEvent("OnGetImageFailure", ImageHash, err)
-				Callback.Call(ImageHash, err)
-				return
-			}
-				
-			for Key, Val in DataObj.data
-				Img[Key] := Val	
-				
-			this.CallEvent("OnGetImageSuccess", Img)
-			Callback.Call(true, Img)
+		if Error {
+			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.BadRequest(Error))
+			return
 		}
 		
-		this.CallEvent("OnGetImageFailure", ImageHash)
-		Callback.Call(ImageHash, true)
+		try
+			DataObj := JSON.Load(Data.ResponseText)
+		catch e {
+			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.MalformedJSON(e.Message))
+			return
+		}
+		
+		for Key, Val in DataObj.data
+			Image[Key] := Val
+		
+		this.CallEvent("OnGetImageResponse", Callback, Image, false)
+		
 	}
 	
 	RegisterEvent(Event, Func) {
@@ -119,9 +136,16 @@ Class Imgur {
 		this.Events[Event] := []
 	}
 	
-	CallEvent(Event, Param*) {
-		for i, f in this.Events[Event]
-			f.Call(Param*)
+	/*
+		!!! PRIVATE METHODS !!!
+	*/
+	
+	CallEvent(Event, Callback, Param*) {
+		if Callback
+			Callback.Call(Param*)
+		else
+			for i, f in this.Events[Event]
+				f.Call(Param*)
 	}
 }
 
