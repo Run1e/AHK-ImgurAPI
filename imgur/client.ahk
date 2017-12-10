@@ -4,13 +4,10 @@
 Class Imgur {
 	
 	#Include %A_LineFile%\..\image.ahk
-	
-	#Include %A_LineFile%\..\worker.ahk
 	#Include %A_LineFile%\..\errors.ahk
-	
-	
 	#Include %A_LineFile%\..\uploadworker.ahk
 	
+	; imgurs API endpoint
 	static Endpoint := "https://api.imgur.com/3/"
 	
 	__New(client_id) {
@@ -18,6 +15,7 @@ Class Imgur {
 		
 		this.id := client_id
 		
+		; holds arrays of events for each event
 		this.Events := 
 		(LTrim Join
 		{
@@ -27,9 +25,8 @@ Class Imgur {
 		}
 		)
 		
-		;this.Requester := new Imgur.RequestWorker(this)
+		; create the image upload worker
 		this.Uploader := new Imgur.UploadWorker(this)
-		this.Requester := new Imgur.RequestWorker(this)
 	}
 	
 	__Delete() {
@@ -42,47 +39,45 @@ Class Imgur {
 	
 	Free() {
 		this.Uploader := ""
-		this.Requester := ""
 		this.Events := ""
 	}
 	
-	; create new ImageType instance
+	; create new ImageType instance used for uploading images
 	Image(File := "") {
 		return new Imgur.ImageType(this, File)
 	}
 	
 	; upload image
 	Upload(Image, Callback := "") {
-		; check the input passed is an ImageType instance
+		; check the Image parameter is an Image type
 		if !isinstance(Image, Imgur.ImageType)
 			throw new Imgur.Errors.TypeError("Input has to be an Imgur.ImageType instance.")
 		
-		; make sure the ImageType instance was instantiated from this Client
+		; throw ClientMismatch if Image stems from another client
 		if (&(Image.Client) != &this)
 			throw new Imgur.Errors.ClientMismatch
 		
-		if !FileExist(Image.File)
-			throw new Imgur.Errors.MissingFileError(Image.File)
-		
-		this.Uploader.Upload(Image, Callback)
+		Image.Upload(Callback)
 	}
 	
 	GetImage(ImageHash, Callback := "") {
-		this.Print("GetImage for " ImageHash)
-		
-		Image := this.Image()
-		Image.id := ImageHash
-		
-		g := new Request.Get(this.Endpoint "image/" Image.id)
-		g.OnResponse(this.GetImageResponse.Bind(this, Image, Callback))
-		g.AddHeader("Authorization", "Client-ID " this.id)
-		g.Send()
+		Image := this.Image(ImageHash)
+		Image.Get(Callback)
 	}
 	
+	/*
+		register an event.
+		
+		valid events:
+		OnUploadResponse - runs when an image upload response is received
+		OnUploadProgress - runs when an image being uploaded progresses
+		OnGetImageResponse - runs when a GetImage request returns a response
+	*/
 	RegisterEvent(Event, Func) {
 		this.Events[Event].Push(Func)
 	}
 	
+	; clear a type of event
 	ClearEvent(Event) {
 		this.Events[Event] := []
 	}
@@ -91,57 +86,18 @@ Class Imgur {
 		!!! PRIVATE METHODS !!!
 	*/
 	
+	/*
+		call an event.
+		
+		callback provided? the event should not be raised.
+		not? then run the event.
+	*/
 	CallEvent(Event, Callback, Param*) {
 		if Callback
 			Callback.Call(Param*)
 		else
 			for i, f in this.Events[Event]
 				f.Call(Param*)
-	}
-	
-	UploadResponse(Image, Callback, Data, Headers, Error) {
-		if Error
-			Error := ObjShare(Error)
-		
-		if Error {
-			this.Client.CallEvent("OnUploadResponse", Callback, Image, Error)
-			return
-		}
-		
-		try
-			DataObj := JSON.Load(Data)
-		catch e
-			throw new Imgur.Errors.BadResponse(e.Message)
-		
-		for Key, Value in DataObj.data
-			Image[Key] := Value
-		
-		this.Print("Image successfully uploaded (" Image.File ", " Image.id ")")
-		
-		this.Client.CallEvent("OnUploadResponse", Callback, Image, false)
-		this.Next(true)
-	}
-	
-	GetImageResponse(Image, Callback, Data, Headers, Error) {
-		this.Print("GetImageResponse for " Image.id " " (Error ? "failed" : "succeeded"))
-		
-		if Error {
-			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.BadRequest(Error))
-			return
-		}
-		
-		try
-			DataObj := JSON.Load(Data.ResponseText)
-		catch e {
-			this.CallEvent("OnGetImageResponse", Callback, Image, new Imgur.Errors.MalformedJSON(e.Message))
-			return
-		}
-		
-		for Key, Val in DataObj.data
-			Image[Key] := Val
-		
-		this.CallEvent("OnGetImageResponse", Callback, Image, false)
-		
 	}
 }
 

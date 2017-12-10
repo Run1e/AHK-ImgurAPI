@@ -5,19 +5,41 @@
 SetBatchLines -1
 SetWorkingDir % A_ScriptDir
 
+#Include imgur\client.ahk
 #Include *i <Debug>
 
+Debug.Clear()
+
 x := new Imgur("45a0e7fa6727f61")
+
 x.RegisterEvent("OnUploadProgress", Func("Progress"))
-x.Image("pic.jpg").Upload(Func("OnUpload"))
+x.RegisterEvent("OnUploadResponse", Func("OnUpload"))
+x.RegisterEvent("OnGetImageResponse", Func("OnGetImage"))
+
+/*
+	Image := x.Image("bwbgRxz")
+	Image.Get()
+*/
+
+/*
+	Image := x.Image("pic.jpg")
+	Image.Upload()
+*/
 return
+
+
+GetImage(Image, Error) {
+	m(A_ThisFunc, "", Image)
+}
 
 Progress(Image, Current, Total) {
 	t(Floor((current / total) * 100))
 }
 
-OnUpload(Image, Error) {
-	m(Image)
+OnGetImage(Image, Error) {
+	m(A_ThisFunc, "", Image)
 }
 
-#Include imgur\client.ahk
+OnUpload(Image, Error) {
+	m(A_ThisFunc, "", Image)
+}

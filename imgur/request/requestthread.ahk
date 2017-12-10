@@ -49,7 +49,7 @@ Send() {
 	if (Res.Status = 200)
 		Req.Callback.Call(Res, Out, false)
 	else
-		Req.Callback.Call(Res, Out, ObjShare(Exception("Status not OK", -1, Req.Status)))
+		Req.Callback.Call(Res, Out, ObjShare(Exception("Status not OK", -1, Res.Status)))
 }
 
 UriEncode(Uri) {

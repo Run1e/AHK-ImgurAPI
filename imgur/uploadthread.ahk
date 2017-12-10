@@ -4,8 +4,6 @@
 #WarnContinuableException off
 SetBatchLines -1
 
-#Include *i <Debug>
-
 finished := true
 return
 
