@@ -1,25 +1,21 @@
-﻿Class UploadWorker {
+﻿Class UploadWorker extends Imgur.ClientChild {
+	
+	; worker thread code
+	ThreadFile := A_LineFile "\..\uploadthread.ahk"
 	
 	__New(Client) {
-		; the code of the worker thread
-		this.ThreadFile := A_LineFile "\..\uploadthread.ahk"
+		this.Client := Client
 		
 		; throw WorkerLaunchFailure if we fail at reading the file
 		if !File := FileOpen(this.ThreadFile, "r")
-			throw new Imgur.Errors.WorkerLaunchFailure("Failed opening " this.ThreadFile)
+			throw new Imgur.WorkerLaunchFailure("Failed opening " this.ThreadFile)
 		
-		this.Client := Client
-		this.Print := this.Client.Print
 		
 		this.Queue := []
 		this.Busy := false
 		
-		; set up the environment variables for the worker
-		for var, val in {Client: Client, Worker: this}
-			this.Script .= "global " var " := ObjShare(" ObjShare(val) ")`n"
-		
 		; read the file contents and close file object
-		this.Script .= File.Read()
+		this.Script := "global Endpoint := """ this.Endpoint """`nglobal client_id := """ this.apikey """`n" File.Read()
 		File.Close()
 		
 		; launch thread
@@ -30,7 +26,14 @@
 			sleep 20
 		until this.Thread.ahkgetvar.finished
 		
-		this.Print("Worker started: " this.ThreadFile)
+		this.Print(this.base.__Class " created")
+	}
+	
+	__Delete() {
+		;this.Thread.ahkExec("Client := """"")
+		ahkthread_free(this.Thread)
+		this.Thread := ""
+		this.Client.Print(this.base.__Class " destroyed")
 	}
 	
 	; move to the next item in the queue
@@ -38,9 +41,11 @@
 		; remove the last queue item if told to
 		if Pop
 			this.Queue.RemoveAt(1)
+		
 		; stop queue if there's nothing left
 		if this.Busy && !this.Queue.Length()
 			return this.Busy := false
+		
 		; otherwise, call the next queue boundfunc and set this.Busy accordingly
 		if this.Queue.Length()
 			this.Busy := true, this.Queue[1].Call()
@@ -53,7 +58,7 @@
 		
 		; make sure the Image provided is ImageType
 		if !isinstance(Image, Imgur.ImageType)
-			throw new Imgur.Errors.TypeError("Input has to be instance of Imgur.ImageType")
+			throw new Imgur.TypeError("Input has to be instance of Imgur.ImageType")
 		
 		this.Print("Added image upload to queue (" Image.File ")")
 		

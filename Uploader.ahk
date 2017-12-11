@@ -10,36 +10,21 @@ SetWorkingDir % A_ScriptDir
 
 Debug.Clear()
 
-x := new Imgur("45a0e7fa6727f61")
+global x := new Imgur("45a0e7fa6727f61")
 
-x.RegisterEvent("OnUploadProgress", Func("Progress"))
-x.RegisterEvent("OnUploadResponse", Func("OnUpload"))
-x.RegisterEvent("OnGetImageResponse", Func("OnGetImage"))
+x.OnEvent("UploadProgress", Func("OnProgress"))
+x.OnEvent("UploadResponse", Func("OnResponse"))
+x.OnEvent("GetImageResponse", Func("OnResponse"))
 
-/*
-	Image := x.Image("bwbgRxz")
-	Image.Get()
-*/
+Image := x.Image("pic.jpg")
+Image.Upload()
 
-/*
-	Image := x.Image("pic.jpg")
-	Image.Upload()
-*/
 return
 
-
-GetImage(Image, Error) {
-	m(A_ThisFunc, "", Image)
+OnResponse(Image, Error) {
+	m(Image)
 }
 
-Progress(Image, Current, Total) {
+OnProgress(Image, Current, Total) {
 	t(Floor((current / total) * 100))
-}
-
-OnGetImage(Image, Error) {
-	m(A_ThisFunc, "", Image)
-}
-
-OnUpload(Image, Error) {
-	m(A_ThisFunc, "", Image)
 }

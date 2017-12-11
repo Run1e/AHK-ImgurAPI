@@ -1,55 +1,57 @@
 ﻿#SingleInstance force
 #Persistent
 
-global HTTP, Req, Res, Out
-
-HTTP := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-
-Req := {Method: "", Timeout: 5, Post: {}}
-
+global HTTP := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+global Request := {Method: "", Timeout: 5}
 Ready := true
+return
 
 AddHeader(Header, Value) {
 	HTTP.SetRequestHeader(Header, Value)
 }
 
 SetMethod(Method) {
-	Req.Method := Method
+	Request.Method := Method
 }
 
 SetURL(URL) {
-	Req.URL := URL
+	Request.URL := URL
 }
 
-SetCallback(Callback) {
-	Req.Callback := ObjShare(Callback)
+SetResponse(Response) {
+	Request.Response := ObjShare(Response)
 }
 
 Open() {
-	HTTP.Open(Req.Method, Req.URL, true)
+	HTTP.Open(Request.Method, Request.URL, true)
 }
 
 Send() {
-	for Key, Val in Req.Post
-		Post .= "&" Key "=" UriEncode(Val)
+	HTTP.Send()
 	
-	HTTP.Send(SubStr(Post, 2))
+	if !HTTP.WaitForResponse(Request.Timeout) {
+		Request.Response.SetError(Exception("Request timed out.",, "HTTPTimeout"))
+		return Go()
+	}
 	
-	if !HTTP.WaitForResponse(Req.Timeout)
-		return Req.Callback.Call("", "", ObjShare(Exception("Request timed out", -1, "Timeout: " Req.Timeout)))
+	for Index, Value in ["Status", "StatusText", "ResponseText"] ; "ResponseBody"
+		Request.Response[Value] := HTTP[Value]
 	
-	Res := {}
-	for Index, Value in ["Status", "StatusText", "ResponseText", "ResponseBody"]
-		Res[Value] := HTTP[Value]
+	for Index, Signature in StrSplit(HTTP.GetAllResponseHeaders(), "`n") {
+		HDR := StrSplit(Signature, ": ")
+		Header := trim(HDR.1, "`t`r`n")
+		Value := trim(HDR.2, "`t`r`n")
+		if StrLen(Header)
+			Request.Response.Headers[Header] := Value
+	}
 	
-	for Index, Header in StrSplit(HTTP.GetAllResponseHeaders(), "`n"), Out := {}
-		if StrLen((HDR := StrSplit(Header, ": ")).1)
-			Out[HDR.1] := HDR.2
-	
-	if (Res.Status = 200)
-		Req.Callback.Call(Res, Out, false)
-	else
-		Req.Callback.Call(Res, Out, ObjShare(Exception("Status not OK", -1, Res.Status)))
+	Go()
+}
+
+Go() {
+	Request.Response.Finished()
+	Request := ""
+	ExitApp
 }
 
 UriEncode(Uri) {

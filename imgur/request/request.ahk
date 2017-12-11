@@ -1,48 +1,23 @@
 ﻿Class Request {
-	Class RequestBase {
-		ThreadFile := A_LineFile "\..\requestthread.ahk"
+	Class Response {
+		Headers := {}
 		
-		__New(URL) {
-			try
-				this.Script := FileOpen(this.ThreadFile, "r").Read()
-			catch e
-				throw Exception("Failed reading thread script data", -1, this.ThreadFile)
+		__New(Callback) {
+			this.Callback := Callback
 			
-			this.URL := URL
-			this.Thread := AhkThread(this.Script)
-			
-			while !(this.Thread.ahkgetvar.Ready)
-				continue
-			
-			this.Thread.ahkFunction("SetMethod", this.Method)
-			this.Thread.ahkFunction("SetURL", URL)
-			this.Thread.ahkFunction("Open")
-			this.Thread.ahkFunction("AddHeader", "Content-Type", "application/x-www-form-urlencoded")
-			Callback := ObjShare(this.Response.Bind(this))
-			this.Thread.ahkFunction("SetCallback", Callback)
+			p(type(this) " created")
 		}
 		
 		__Delete() {
-			ahkthread_free(this.Thread)
-			this.Thread := ""
+			p(type(this) " destroyed")
 		}
 		
-		AddHeader(Header, Value) {
-			this.Thread.ahkFunction("AddHeader", Header, Value)
+		SetError(Error) {
+			this.Error := {Message: Error.Message, What: Error.What, Extra: Error.Extra}
 		}
 		
-		Response(Data, Headers, Error) {
-			try this.Callback.Call(Data, Headers, Error)
-			ahkthread_free(this.Thread)
-			this.Thread := ""
-		}
-		
-		OnResponse(Func) {
-			this.Callback := Func
-		}
-		
-		Send() {
-			this.Thread.ahkPostFunction("Send")
+		Finished() {
+			this.Callback.Call(this)
 		}
 	}
 	
@@ -52,5 +27,63 @@
 	
 	Class Post extends Request.RequestBase {
 		Method := "POST"
+	}
+	
+	Class RequestBase {
+		ThreadFile := A_LineFile "\..\requestthread.ahk"
+		
+		__New(URL, Callback) {
+			try
+				this.Script := FileOpen(this.ThreadFile, "r").Read()
+			catch e
+				throw Exception("Failed reading thread script data", -1, this.ThreadFile)
+			
+			this.URL := URL
+			this.Callback := Callback
+			this.Headers := {}
+			
+			if Debug
+				this.DebugFunc := Debug
+			
+			this.Print(type(this) " created")
+		}
+		
+		__Delete() {
+			this.Print(type(this) " destroyed")
+		}
+		
+		Print(x*) {
+			p(x*)
+		}
+		
+		SetHeader(Header, Value) {
+			this.Headers[Header] := Value
+		}
+		
+		SetMethod(Method) {
+			this.Method := Method
+		}
+		
+		Send() {
+			this.Thread := AhkThread(this.Script)
+			
+			while !(this.Thread.ahkgetvar.Ready)
+				continue
+			
+			this.Thread.ahkFunction("SetMethod", this.Method)
+			this.Thread.ahkFunction("SetURL", this.URL)
+			
+			this.Thread.ahkFunction("Open")
+			
+			for Header, Value in this.Headers
+				this.Thread.ahkFunction("AddHeader", Header, Value)
+			
+			Response := new Request.Response(this.Callback)
+			Response.Request := this
+			ResponseShare := ObjShare(Response)
+			
+			this.Thread.ahkFunction("SetResponse", ResponseShare)
+			this.Thread.ahkPostFunction("Send")
+		}
 	}
 }

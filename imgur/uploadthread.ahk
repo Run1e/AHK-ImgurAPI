@@ -1,6 +1,6 @@
 ﻿#SingleInstance force
 #Persistent
-;#NoTrayIcon
+#NoTrayIcon
 #WarnContinuableException off
 SetBatchLines -1
 
@@ -13,14 +13,13 @@ Upload(Image, Callback, ProgressCallback) {
 	ProgressCallback := ObjShare(ProgressCallback)
 	
 	try {
-		if !UploadFile(Client.Endpoint "image", Data := "", Headers := {Authorization: "Client-ID " Client.id}, Image.File, ProgressCallback)
+		if !UploadFile(Endpoint "image", Data := "", Headers := {Authorization: "Client-ID " client_id}, Image.File, ProgressCallback)
 			return Callback.Call(Data, Headers, ObjShare(Exception("No response", -1)))
 	} catch e
 		return Callback.Call(Data, Headers, ObjShare(e))
 	
 	Callback.Call(Data, Headers, false)
 }
-
 
 ; only tested on x32 ahk_h unicode
 UploadFile(URL, ByRef Data := "", ByRef Headers := "", File := "", Callback := "") {

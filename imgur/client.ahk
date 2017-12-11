@@ -1,48 +1,49 @@
-﻿#Include %A_LineFile%\..\lib\third-party\JSON.ahk
+﻿; libs
+#Include %A_LineFile%\..\lib\third-party\JSON.ahk
 #Include %A_LineFile%\..\request\request.ahk
 
 Class Imgur {
 	
-	#Include %A_LineFile%\..\image.ahk
+	; misc 
 	#Include %A_LineFile%\..\errors.ahk
+	#Include %A_LineFile%\..\clientchild.ahk
 	#Include %A_LineFile%\..\uploadworker.ahk
+	
+	; types
+	#Include %A_LineFile%\..\image.ahk
 	
 	; imgurs API endpoint
 	static Endpoint := "https://api.imgur.com/3/"
 	
 	__New(client_id) {
-		this.Print("Creating new client (" client_id ")")
-		
-		this.id := client_id
+		this.apikey := client_id
 		
 		; holds arrays of events for each event
 		this.Events := 
 		(LTrim Join
 		{
-			OnUploadResponse: [],
-			OnUploadProgress: [],
-			OnGetImageResponse: []
+			UploadResponse: [],
+			UploadProgress: [],
+			GetImageResponse: []
 		}
 		)
 		
 		; create the image upload worker
 		this.Uploader := new Imgur.UploadWorker(this)
+		
+		this.Print(type(this) " created")
 	}
 	
 	__Delete() {
-		this.Print("Client instance removed: (" this.id ")")
+		this.Uploader := ""
+		this.Print(type(this) " destroyed")
 	}
 	
 	Print(x*) {
 		p(x*)
 	}
 	
-	Free() {
-		this.Uploader := ""
-		this.Events := ""
-	}
-	
-	; create new ImageType instance used for uploading images
+	; shorthand for new Imgur.ImageType(Instance, File)
 	Image(File := "") {
 		return new Imgur.ImageType(this, File)
 	}
@@ -51,17 +52,20 @@ Class Imgur {
 	Upload(Image, Callback := "") {
 		; check the Image parameter is an Image type
 		if !isinstance(Image, Imgur.ImageType)
-			throw new Imgur.Errors.TypeError("Input has to be an Imgur.ImageType instance.")
+			throw new Imgur.TypeError("Input has to be an Imgur.ImageType instance.")
 		
 		; throw ClientMismatch if Image stems from another client
 		if (&(Image.Client) != &this)
-			throw new Imgur.Errors.ClientMismatch
+			throw new Imgur.ClientMismatch
 		
 		Image.Upload(Callback)
 	}
 	
 	GetImage(ImageHash, Callback := "") {
-		Image := this.Image(ImageHash)
+		if isinstance(ImageHash, Imgur.ImageType)
+			Image := ImageHash
+		else
+			Image := this.Image(ImageHash)
 		Image.Get(Callback)
 	}
 	
@@ -69,11 +73,11 @@ Class Imgur {
 		register an event.
 		
 		valid events:
-		OnUploadResponse - runs when an image upload response is received
-		OnUploadProgress - runs when an image being uploaded progresses
-		OnGetImageResponse - runs when a GetImage request returns a response
+		UploadResponse - runs when an image upload response is received
+		UploadProgress - runs when an image being uploaded progresses
+		GetImageResponse - runs when a GetImage request returns a response
 	*/
-	RegisterEvent(Event, Func) {
+	OnEvent(Event, Func) {
 		this.Events[Event].Push(Func)
 	}
 	
@@ -86,6 +90,11 @@ Class Imgur {
 		!!! PRIVATE METHODS !!!
 	*/
 	
+	ParseResponse(Resp) {
+		Data := JSON.Load(Resp.ResponseText)
+		return Data
+	}
+	
 	/*
 		call an event.
 		
@@ -96,14 +105,18 @@ Class Imgur {
 		if Callback
 			Callback.Call(Param*)
 		else
-			for i, f in this.Events[Event]
-				f.Call(Param*)
+			for Index, EventFunc in this.Events[Event]
+				EventFunc.Call(Param*)
 	}
 }
 
 ; checks if Instance is an instance of Class
-isinstance(Instance, Base) {
-	return Instance.base.__Class = Base.__Class
+isinstance(instance, base) {
+	return type(instance) = base.__Class
+}
+
+type(instance) {
+	return instance.base.__Class
 }
 
 ; checks if a normal array has a value

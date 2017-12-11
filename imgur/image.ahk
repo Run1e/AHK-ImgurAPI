@@ -1,4 +1,4 @@
-﻿Class ImageType {
+﻿Class ImageType extends Imgur.ClientChild {
 	
 	; allowed file extensions by imgur
 	static Extensions := ["JPG", "JPEG", "PNG", "GIF", "APNG", "TIFF", "PDF"]
@@ -12,20 +12,18 @@
 			
 			; check if its filetype is recognized by imgur
 			if !ArrayHasValue(this.Extensions, Ext)
-				throw new Imgur.Errors.FileTypeError(Ext)
+				throw new Imgur.FileTypeError(Ext)
 			
 			; make sure file is under 10mb large
 			FileGetSize, Size, % File
 			if (Size > 10480000)
-				throw new Imgur.Errors.FileSizeError(Size)
+				throw new Imgur.FileSizeError(Size)
 			
 			this.File := File
 		} else 
 			this.id := File
-	}
-	
-	__Delete() {
-		this.Client.Print("ImageType instance removed (" this.File ", " this.id ")")
+		
+		this.Print(type(this) " created")
 	}
 	
 	; upload the file. this is shorthand for:
@@ -33,31 +31,14 @@
 	Upload(Callback := "") {
 		; throw MissingFileError if file doesn't exist
 		if !FileExist(this.File)
-			throw new Imgur.Errors.MissingFileError(this.File)
+			throw new Imgur.MissingFileError(this.File)
 		
 		; pass the Image and the (potential) callback to the Uploader
-		this.Client.Uploader.Upload(this, Callback)
+		this.Uploader.Upload(this, Callback)
 	}
-	
-	Get(Callback := "") {
-		this.Print("Getting image (" ImageHash ")")
-		
-		if !this.id
-			throw new Imgur.Errors.MissingID(A_ThisFunc)
-		
-		; form a new request
-		Req := new Request.Get(this.Client.Endpoint "image/" this.id)
-		; add the auth header
-		Req.AddHeader("Authorization", "Client-ID " this.Client.id)
-		; set the response callback boundfunc
-		Req.OnResponse(this.GetResponse.Bind(this, Callback))
-		; send the request
-		Req.Send()
-	}
-	
 	
 	UploadProgress(Current, Total) {
-		this.Client.CallEvent("OnUploadProgress", "", this, Current, Total)
+		this.CallEvent("UploadProgress", "", this, Current, Total)
 	}
 	
 	UploadResponse(Callback, Data, Header, Error) {
@@ -65,7 +46,7 @@
 		if Error {
 			Error := ObjShare(Error)
 			this.Print(A_ThisFunc ": Error when uploading - " Error.Message)
-			this.Client.CallEvent("OnUploadResponse", Callback, this, Error)
+			this.CallEvent("UploadResponse", Callback, this, Error)
 			return
 		}
 		
@@ -73,36 +54,42 @@
 		try
 			DataObj := JSON.Load(Data)
 		catch e
-			throw new Imgur.Errors.BadResponse(e.Message)
+			throw new Imgur.BadResponse(e.Message)
 		
 		; put the data k/v pairs in the Image instance
 		for Key, Value in DataObj.data
 			this[Key] := Value
 		
-		this.Print("this successfully uploaded (" this.File ", " this.id ")")
-		
 		; call the event (or callback)
-		this.Client.CallEvent("OnUploadResponse", Callback, this, false)
+		this.CallEvent("UploadResponse", Callback, this, false)
+		
+		this.Client.Uploader.Next(true)
 	}
 	
-	GetResponse(Callback, Data, Headers, Error) {
-		this.Print("GetImageResponse for " this.id " " (Error ? "failed" : "succeeded"))
+	Get(Callback := "") {
+		this.Print("Getting image (" this.id ")")
 		
-		; call the event with the error if there is one
-		if Error
-			return this.Client.CallEvent("OnGetImageResponse", Callback, this, ObjShare(Error))
+		if !this.id
+			throw new Imgur.MissingID()
 		
-		; try to get JSON encoded text
-		try
-			DataObj := JSON.Load(Data.ResponseText)
-		catch e
-			return this.Client.CallEvent("OnGetImageResponse", Callback, this, new Imgur.Errors.BadResponse(e.Message))
+		; form a new request
+		Req := new Request.Get(this.Endpoint "image/" this.id , this.GetResponse.Bind(this, Callback))
+		; add the auth header
+		Req.SetHeader("Authorization", "Client-ID " this.apikey)
+		; send the request
+		Req.Send()
+	}
+	
+	GetResponse(Callback, Resp) {
+		this.Print("GetImageResponse: " this.id)
+		
+		Data := this.ParseResponse(Resp)
 		
 		; put in Image instance
-		for Key, Val in DataObj.data
+		for Key, Val in Data.data 
 			this[Key] := Val
 		
 		; call event
-		this.Client.CallEvent("OnGetImageResponse", Callback, this, false)
+		this.CallEvent("GetImageResponse", Callback, this, false)
 	}
 }
