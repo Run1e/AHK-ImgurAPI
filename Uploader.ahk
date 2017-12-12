@@ -2,39 +2,49 @@
 #NoEnv
 #Persistent
 #WarnContinuableException off
-SetBatchLines -1
-SetWorkingDir % A_ScriptDir
 
-#Include imgur\client.ahk
-#Include *i <Debug>
-
-Debug.Clear()
-
-Client := new Imgur("45a0e7fa6727f61")
-
-Client.OnEvent("UploadProgress", Func("OnProgress"))
-Client.OnEvent("UploadResponse", Func("OnResponse"))
-Client.OnEvent("GetImageResponse", Func("OnResponse"))
-
-Client.Image("bWHQPld").Get()
-Client.Image("2Sh67fS").Get()
-
-/*
-	Image := x.Image("pic.jpg")
-	Image.Upload()
-*/
-
+main()
 return
 
-OnResponse(Image, Resp) {
-	if Resp.Error {
-		Debug.Log(Resp.Error)
-		return
+main() {
+	SetBatchLines -1
+	SetWinDelay, -1
+	SetWorkingDir % A_ScriptDir
+	
+	global Settings, Client
+	
+	Debug.Clear()
+	
+	if !FileExist("data")
+		FileCreateDir data
+	
+	Settings := new JSONFile("data/settings.json")
+	
+	Defaults :=
+	( LTrim Join
+	{
+		client_id: "45a0e7fa6727f61"
 	}
-	m(image)
+	)
+	
+	Settings.Fill(Defaults)
+	Settings.Save(true)
+	
+	try
+		Client := new Imgur(Settings.client_id)
+	catch e {
+		if isinstance(e, Imgur.UploadFailure)
+	}
+	
+	global IG := new ImgurGUI
 }
 
-OnProgress(Image, Current, Total) {
-	t(Floor((current / total) * 100))
-}
-#Include gui\Class GuiBase.ahk
+; libs
+#Include imgur\client.ahk
+#Include gui\gui.ahk
+
+; project
+#Include lib\ImgurGUI.ahk
+#Include lib\JSONFile.ahk
+
+#Include lib\Debug.ahk

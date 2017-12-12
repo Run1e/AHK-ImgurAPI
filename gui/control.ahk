@@ -1,13 +1,11 @@
 ﻿Class ControlType {
 	__New(Gui, Options := "", Text := "") {
-		
 		this.Gui := Gui
-		this.Type := SubStr(this.base.__Class, 9, -7)
-		
 		Gui % this.Gui.hwnd ":Add", % this.Type, % "hwndhwnd " Options, % Text
 		this.hwnd := hwnd
+		this.Position := this.Pos := new GuiBase.ControlPosition(this.hwnd)
 		
-		this.Pos := new GuiBase.ControlPosition(this.hwnd)
+		this.Init()
 		
 		p(this.base.__Class " created")
 	}

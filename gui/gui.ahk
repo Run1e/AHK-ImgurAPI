@@ -1,6 +1,5 @@
 ﻿Class GuiBase {
 	
-	;#Include %A_LineFile%\..\imagelist.ahk
 	;#Include %A_LineFile%\..\statusbar.ahk
 	
 	; MISC
@@ -26,7 +25,7 @@
 		this.ahkid := "ahk_id" hwnd
 		GuiBase.Guis[this.hwnd] := &this
 		
-		this.Pos := new GuiBase.WindowPosition(this.hwnd)
+		this.Position := this.Pos := new GuiBase.WindowPosition(this.hwnd)
 		
 		this.DropFilesToggle(false) ; disable drag-drop by default
 		
@@ -75,6 +74,14 @@
 		GuiControl % this.hwnd ":" Command, % Control, % ControlParams
 	}
 	
+	Margins(x := "", y := "") {
+		Gui % this.hwnd ": Margin", % x, % y
+	}
+	
+	Focus() {
+		WinActivate % this.ahkid
+	}
+	
 	; ADD CONTROLS
 	
 	AddText(Options := "", Text := "") {
@@ -114,14 +121,6 @@
 			DetectHiddenWindows % DHW
 			return !!exist
 		}
-	}
-	
-	Margin(x := "", y := "") {
-		Gui % this.hwnd ": Margin", % x, % y
-	}
-	
-	Focus() {
-		WinActivate % this.ahkid
 	}
 	
 	; base

@@ -1,4 +1,6 @@
 ﻿Class ListViewControl extends GuiBase.ControlType {
+	Type := "ListView"
+	
 	Add(Options := "", Fields*) {
 		this.SetDefault()
 		return LV_Add(Options, Fields*)

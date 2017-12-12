@@ -25,9 +25,9 @@
 Class JSONFile {
 	static Instances := []
 	
-	__New(File, Debugger := "") {
+	__New(File) {
 		FileExist := FileExist(File)
-		JSONFile.Instances[&this] := {File: File, Object: {}, Debug: Debugger}
+		JSONFile.Instances[&this] := {File: File, Object: {}}
 		FileObj := FileOpen(File, "rw")
 		if !IsObject(FileObj)
 			throw Exception("Can't access file for JSONFile instance: " File, -1)
@@ -59,13 +59,7 @@ Class JSONFile {
 		
 		; save the json file
 		if (Func = "Save") {
-			try
-				New := this.JSON(Param.1)
-			catch e {
-				if this.Debug()
-					this.Debug().Log(e, true)
-				return false
-			}
+			New := this.JSON(Param.1)
 			FileObj := FileOpen(this.File(), "w")
 			FileObj.Length := 0
 			FileObj.Write(New)

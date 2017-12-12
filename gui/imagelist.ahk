@@ -10,8 +10,8 @@
 		p(this.base.__Class " destroyed")
 	}
 	
-	Add(File, IconNumber := "", ResizeNonIcon := "") {
-		if id := IL_Add(this.id, File, IconNumber, ResizeNonIcon) {
+	Add(Resource, IconNumber := "", ResizeNonIcon := "") {
+		if id := IL_Add(this.id, Resource, IconNumber, ResizeNonIcon) {
 			this.Size++
 			return id
 		}

@@ -4,25 +4,20 @@
 
 Debug.Clear()
 
-g := new GuiBase("Title", ["-MinimizeBox"])
+global g := new GuiBase("Title", ["-MinimizeBox"])
 g.Close := Func("Exit")
 
 lv := g.AddListView([{x:0, y:0, w:200, h:500}], ["a", "b", "c"])
 lv.OnEvent(Func("Hello"))
 lv.SetImageList(new GuiBase.ImageList)
 
-lv.il.add("D:\Documents\Scripts\Vibrancer\icons\vibrancer.ico")
-lv.add(lv.il.add("D:\Documents\Scripts\Vibrancer\icons\vibrancer.ico"), "test")
-
-g.show([{w:200, h:500}])
-
-;g.Destroy()
-;g := ""
-
+lv.Add(lv.IL.Add("D:\Documents\Scripts\Vibrancer\icons\vibrancer.ico"), "some text")
+g.Margins(0, 0)
+g.Show()
 return
 
-Hello(x*) {
-	p(x*)
+Hello(hwnd, eventinfo, whatever) {
+	p(hwnd ", " eventinfo ", " whatever)
 }
 
 Exit() {

@@ -2,12 +2,12 @@
 	Message := "An error occured."
 	
 	__New(Data := "") {
-		Ex := Exception(this.Message)
-		Ex.base := this.base
+		ex := Exception(this.Message)
+		ex.base := this.base
 		if IsObject(Data)
 			for Key, Val in Data
-				Ex[Key] := Val
-		return Ex
+				ex[Key] := Val
+		return ex
 	}
 }
 
