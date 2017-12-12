@@ -16,7 +16,7 @@
 			this.Error := {Message: Error.Message, What: Error.What, Extra: Error.Extra}
 		}
 		
-		Finished() {
+		Go() {
 			this.Callback.Call(this)
 		}
 	}

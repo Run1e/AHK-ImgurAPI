@@ -10,21 +10,31 @@ SetWorkingDir % A_ScriptDir
 
 Debug.Clear()
 
-global x := new Imgur("45a0e7fa6727f61")
+Client := new Imgur("45a0e7fa6727f61")
 
-x.OnEvent("UploadProgress", Func("OnProgress"))
-x.OnEvent("UploadResponse", Func("OnResponse"))
-x.OnEvent("GetImageResponse", Func("OnResponse"))
+Client.OnEvent("UploadProgress", Func("OnProgress"))
+Client.OnEvent("UploadResponse", Func("OnResponse"))
+Client.OnEvent("GetImageResponse", Func("OnResponse"))
 
-Image := x.Image("pic.jpg")
-Image.Upload()
+Client.Image("bWHQPld").Get()
+Client.Image("2Sh67fS").Get()
+
+/*
+	Image := x.Image("pic.jpg")
+	Image.Upload()
+*/
 
 return
 
-OnResponse(Image, Error) {
-	m(Image)
+OnResponse(Image, Resp) {
+	if Resp.Error {
+		Debug.Log(Resp.Error)
+		return
+	}
+	m(image)
 }
 
 OnProgress(Image, Current, Total) {
 	t(Floor((current / total) * 100))
 }
+#Include gui\Class GuiBase.ahk

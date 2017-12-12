@@ -49,7 +49,7 @@ Send() {
 }
 
 Go() {
-	Request.Response.Finished()
+	Request.Response.Go()
 	Request := ""
 	ExitApp
 }

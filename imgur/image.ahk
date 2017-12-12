@@ -3,25 +3,25 @@
 	; allowed file extensions by imgur
 	static Extensions := ["JPG", "JPEG", "PNG", "GIF", "APNG", "TIFF", "PDF"]
 	
-	__New(Client, File := "") {
+	__New(Client, FileOrID := "") {
 		this.Client := Client
 		
 		; do file checks if a file is specified.
-		if FileExist(File) {
-			SplitPath, File,,, Ext
+		if FileExist(FileOrID) {
+			SplitPath, FileOrID,,, Ext
 			
 			; check if its filetype is recognized by imgur
 			if !ArrayHasValue(this.Extensions, Ext)
 				throw new Imgur.FileTypeError(Ext)
 			
 			; make sure file is under 10mb large
-			FileGetSize, Size, % File
+			FileGetSize, Size, % FileOrID
 			if (Size > 10480000)
 				throw new Imgur.FileSizeError(Size)
 			
-			this.File := File
+			this.File := FileOrID
 		} else 
-			this.id := File
+			this.id := FileOrID
 		
 		this.Print(type(this) " created")
 	}
@@ -90,6 +90,6 @@
 			this[Key] := Val
 		
 		; call event
-		this.CallEvent("GetImageResponse", Callback, this, false)
+		this.CallEvent("GetImageResponse", Callback, this, Resp)
 	}
 }

@@ -1,5 +1,5 @@
 ﻿; libs
-#Include %A_LineFile%\..\lib\third-party\JSON.ahk
+#Include %A_LineFile%\..\lib\JSON.ahk
 #Include %A_LineFile%\..\request\request.ahk
 
 Class Imgur {
@@ -44,8 +44,8 @@ Class Imgur {
 	}
 	
 	; shorthand for new Imgur.ImageType(Instance, File)
-	Image(File := "") {
-		return new Imgur.ImageType(this, File)
+	Image(FileOrID := "") {
+		return new Imgur.ImageType(this, FileOrID)
 	}
 	
 	; upload image
