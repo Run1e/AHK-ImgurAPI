@@ -1,18 +1,19 @@
 ﻿Class ImageList {
-	static Instances := []
-	
 	__New(InitialCount := 5, GrowCount := 2, LargeIcons := false) {
-		this.ID := IL_Create(InitialCount, GrowCount, LargeIcons)
-		Gui.ListView.ImageList.Instances[this.ID] := this
-		return this
+		this.Size := 0
+		this.id := IL_Create(InitialCount, GrowCount, LargeIcons)
+		p(this.base.__Class " created")
 	}
 	
-	Destroy() {
-		Gui.ListView.ImageList.Instances.Remove(this.ID)
-		return IL_Destroy(this.ID)
+	__Delete() {
+		IL_Destroy(this.id)
+		p(this.base.__Class " destroyed")
 	}
 	
-	Add(File) {
-		return IL_Add(this.ID, File)
+	Add(File, IconNumber := "", ResizeNonIcon := "") {
+		if id := IL_Add(this.id, File, IconNumber, ResizeNonIcon) {
+			this.Size++
+			return id
+		}
 	}
 }

@@ -1,3 +1,3 @@
-﻿Class ButtonType extends GuiBase.ControlType {
+﻿Class ButtonControl extends GuiBase.ControlType {
 	
 }

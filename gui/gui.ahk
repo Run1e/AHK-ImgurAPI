@@ -1,6 +1,5 @@
 ﻿Class GuiBase {
 	
-	;#Include %A_LineFile%\..\listview.ahk
 	;#Include %A_LineFile%\..\imagelist.ahk
 	;#Include %A_LineFile%\..\statusbar.ahk
 	
@@ -11,6 +10,8 @@
 	#Include %A_LineFile%\..\control.ahk
 	#Include %A_LineFile%\..\text.ahk
 	#Include %A_LineFile%\..\button.ahk
+	#Include %A_LineFile%\..\listview.ahk
+	#Include %A_LineFile%\..\imagelist.ahk
 	
 	static Guis := {}
 	
@@ -19,7 +20,7 @@
 	__New(Title := "AutoHotkey Window", Options := "") {
 		this.Title := Title
 		
-		Gui, New, % "+hwndhwnd " CraftOptions(Options), % this.Title
+		Gui, New, % "+hwndhwnd " this.CraftOptions(Options), % this.Title
 		
 		this.hwnd := hwnd
 		this.ahkid := "ahk_id" hwnd
@@ -29,28 +30,68 @@
 		
 		this.DropFilesToggle(false) ; disable drag-drop by default
 		
+		this.Init()
+		
 		p(this.base.__Class " created")
 	}
 	
 	__Delete() {
-		this.Pos := ""
 		this.Controls := ""
+		if this.Visible
+			this.Destroy()
 		p(this.base.__Class " destroyed")
 	}
 	
 	Show(Options := "") {
-		Gui % this.hwnd ":Show", % CraftOptions(Options), % this.Title
-		p("show")
+		Gui % this.hwnd ":Show", % this.CraftOptions(Options), % this.Title
 	}
 	
 	Hide(Options := "") {
-		Gui % this.hwnd ":Hide", % CraftOptions(Options)
+		Gui % this.hwnd ":Hide", % this.CraftOptions(Options)
+	}
+	
+	Destroy() {
+		this.Controls := ""
+		Gui % this.hwnd ":Destroy"
+	}
+	
+	SetDefault() {
+		if (A_DefaultGui != this.hwnd)
+			Gui % this.hwnd ":Default"
+	}
+	
+	SetDefaultListView(ListView) {
+		if (A_DefaultListView != ListView.hwnd)
+			Gui % this.hwnd ":ListView", % ListView.hwnd
+	}
+	
+	GetControl(hwnd) {
+		for Index, Ctrl in this.Controls
+			if Ctrl.hwnd = hwnd
+				return Ctrl
+	}
+	
+	Control(Command := "", Control := "", ControlParams := "") {
+		GuiControl % this.hwnd ":" Command, % Control, % ControlParams
 	}
 	
 	; ADD CONTROLS
 	
 	AddText(Options := "", Text := "") {
-		return this.Controls[this.Controls.Push(new this.TextControl(this, Options, Text))]
+		Control := new GuiBase.TextControl(this, this.CraftOptions(Options), Text)
+		return this.Controls[this.Controls.Push(Control)]
+	}
+	
+	AddButton(Options := "", Text := "") {
+		Control := new GuiBase.ButtonControl(this, this.CraftOptions(Options), Text)
+		return this.Controls[this.Controls.Push(Control)]
+	}
+	
+	AddListView(Options := "", Headers := "") {
+		for Index, Header in Headers
+			HeaderText .= "|" Header
+		Control := new GuiBase.ListViewControl(this, this.CraftOptions(Options), SubStr(HeaderText, 2))
+		return this.Controls[this.Controls.Push(Control)]
 	}
 	
 	; EVENTS
@@ -82,21 +123,32 @@
 	Focus() {
 		WinActivate % this.ahkid
 	}
+	
+	; base
+	
+	GetGui(hwnd) {
+		for Index, Gui in GuiBase.Guis
+			if Gui.hwnd = hwnd
+				return Gui
+	}
+	
+	; INTERNAL
+	
+	CraftOptions(Obj) {
+		if IsObject(Obj) {
+			for Index, Option in Obj {
+				if (Index != A_Index)
+					throw Exception("Option string has to be wrapper in an indexed array.")
+				if IsObject(Option) {
+					for Key, Val in Option 
+						Opt .= " " Key . Val
+				} else
+					Opt .= " " Option
+			}
+		} return SubStr(Opt, 2)
+	}
 }
 
-CraftOptions(Obj) {
-	if IsObject(Obj) {
-		for Index, Option in Obj {
-			if (Index != A_Index)
-				throw Exception("Option string has to be wrapper in an indexed array.")
-			if IsObject(Option) {
-				for Key, Val in Option 
-					Opt .= " " Key . Val
-			} else
-				Opt .= " " Option
-		}
-	} return SubStr(Opt, 2)
-}
 
 GuiClose(GuiHwnd) {
 	if Gui := Object(GuiBase.Guis[GuiHwnd])

@@ -1,11 +1,4 @@
-﻿Class ListView {
-	__New(Parent, Options, Headers, Function := "") {
-		this.Parent := Parent
-		this.Function := Function
-		this.hwnd := Parent.Add("ListView", Options, Headers, Function)
-		return this
-	}
-	
+﻿Class ListViewControl extends GuiBase.ControlType {
 	Add(Options := "", Fields*) {
 		this.SetDefault()
 		return LV_Add(Options, Fields*)
@@ -52,16 +45,17 @@
 	
 	Redraw(Toggle) {
 		this.SetDefault()
-		return this.Parent.Control((Toggle?"+":"-") "Redraw", this.hwnd)
+		return this.Gui.Control((Toggle?"+":"-") "Redraw", this.hwnd)
 	}
 	
-	SetImageList(ID, LargeIcons := false) {
+	SetImageList(ImageList, LargeIcons := false) {
 		this.SetDefault()
-		return LV_SetImageList(ID, !LargeIcons)
+		this.ImageList := this.IL := ImageList
+		return LV_SetImageList(this.ImageList.id, !LargeIcons)
 	}
 	
 	SetDefault() {
-		this.Parent.Default()
-		this.Parent.DefaultListView(this.hwnd)
+		this.Gui.SetDefault()
+		this.Gui.SetDefaultListView(this.hwnd)
 	}
 }
