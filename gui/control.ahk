@@ -7,11 +7,21 @@
 		
 		this.Init()
 		
-		p(this.base.__Class " created")
+		p(type(this) " created")
 	}
 	
 	__Delete() {
-		p(this.base.__Class " destroyed")
+		GuiControl, -g, % this.hwnd
+		p(type(this) " destroyed")
+	}
+	
+	SetText(Text := "") {
+		this.Gui.Control(, this.hwnd, Text)
+	}
+	
+	GetText() {
+		ControlGetText, ControlText,, % "ahk_id" this.hwnd
+		return ControlText
 	}
 	
 	OnEvent(Func) {

@@ -1,16 +1,17 @@
-﻿Class GuiBase {
+﻿#Include %A_LineFile%\..\guievents.ahk
+
+Class GuiBase {
 	
-	;#Include %A_LineFile%\..\statusbar.ahk
-	
-	; MISC
+	; misc
 	#Include %A_LineFile%\..\pos.ahk
+	#Include %A_LineFile%\..\imagelist.ahk
 	
-	; CONTROLS
+	; controls
 	#Include %A_LineFile%\..\control.ahk
 	#Include %A_LineFile%\..\text.ahk
 	#Include %A_LineFile%\..\button.ahk
+	#Include %A_LineFile%\..\edit.ahk
 	#Include %A_LineFile%\..\listview.ahk
-	#Include %A_LineFile%\..\imagelist.ahk
 	
 	static Guis := {}
 	
@@ -42,7 +43,7 @@
 	}
 	
 	Show(Options := "") {
-		Gui % this.hwnd ":Show", % this.CraftOptions(Options), % this.Title
+		Gui % this.hwnd ":Show", % this.CraftOptions(Options), % this.TitleValue
 	}
 	
 	Hide(Options := "") {
@@ -70,22 +71,49 @@
 				return Ctrl
 	}
 	
+	Options(Options) {
+		Gui % this.hwnd ":" Options
+	}
+	
+	DropFilesToggle(Toggle) {
+		this.Options((Toggle ? "+" : "-") . "E0x10")
+	}
+	
 	Control(Command := "", Control := "", ControlParams := "") {
 		GuiControl % this.hwnd ":" Command, % Control, % ControlParams
 	}
 	
 	Margins(x := "", y := "") {
-		Gui % this.hwnd ": Margin", % x, % y
+		Gui % this.hwnd ":Margin", % x, % y
 	}
 	
 	Focus() {
 		WinActivate % this.ahkid
 	}
 	
+	Disable() {
+		Gui % this.hwnd ":+Disabled"
+	}
+	
+	Enable() {
+		Gui % this.hwnd ":-Disabled"
+	}
+	
+	SetIcon(Icon) {
+		hIcon := DllCall("LoadImage", UInt,0, Str, Icon, UInt, 1, UInt, 0, UInt, 0, UInt, 0x10)
+		SendMessage, 0x80, 0, hIcon ,, % this.ahkid  ; One affects Title bar and
+		SendMessage, 0x80, 1, hIcon ,, % this.ahkid  ; the other the ALT+TAB menu
+	}
+	
 	; ADD CONTROLS
 	
 	AddText(Options := "", Text := "") {
 		Control := new GuiBase.TextControl(this, this.CraftOptions(Options), Text)
+		return this.Controls[this.Controls.Push(Control)]
+	}
+	
+	AddEdit(Options := "", Text := "") {
+		Control := new GuiBase.EditControl(this, this.CraftOptions(Options), Text)
 		return this.Controls[this.Controls.Push(Control)]
 	}
 	
@@ -101,7 +129,7 @@
 		return this.Controls[this.Controls.Push(Control)]
 	}
 	
-	; EVENTS
+	; DEFAULT EVENT HANDLERS
 	
 	Close() {
 		this.Hide()
@@ -123,6 +151,41 @@
 		}
 	}
 	
+	Title {
+		set {
+			WinSetTitle, % this.ahkid,, % value
+			this.TitleValue := value
+		}
+		
+		get {
+			return this.TitleValue
+		}
+	}
+	
+	; Gui % this.hwnd ":Color", % BackgroundColor, % ControlColor
+	
+	BackgroundColor {
+		set {
+			Gui % this.hwnd ":Color", % value
+			this.BackgroundColorValue := value
+		}
+		
+		get {
+			return this.BackgroundColorValue
+		}
+	}
+	
+	ControlColor {
+		set {
+			Gui % this.hwnd ":Color",, % value
+			this.ControlColorValue := value
+		}
+		
+		get {
+			return this.ControlColorValue
+		}
+	}
+	
 	; base
 	
 	GetGui(hwnd) {
@@ -137,7 +200,7 @@
 		if IsObject(Obj) {
 			for Index, Option in Obj {
 				if (Index != A_Index)
-					throw Exception("Option string has to be wrapper in an indexed array.")
+					throw Exception("Option string has to be wrapped in an indexed array.")
 				if IsObject(Option) {
 					for Key, Val in Option 
 						Opt .= " " Key . Val
@@ -148,70 +211,10 @@
 	}
 }
 
-
-GuiClose(GuiHwnd) {
-	if Gui := Object(GuiBase.Guis[GuiHwnd])
-		return Gui.Close.Call(Gui)
-}
-
-GuiEscape(GuiHwnd) {
-	if Gui := Object(GuiBase.Guis[GuiHwnd])
-		return Gui.Escape.Call(Gui)
-}
-
-GuiSize(GuiHwnd, EventInfo, Width, Height) {
-	if Gui := Object(GuiBase.Guis[GuiHwnd])
-		return Gui.Size.Call(Gui, EventInfo, Width, Height)
-}
-
-GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
-	if Gui := Object(GuiBase.Guis[GuiHwnd])
-		return Gui.DropFiles.Call(Gui, FileArray, CtrlHwnd, X, Y)
-}
-
-GuiContextMenu(GuiHwnd, CtrlHwnd, EventInfo, IsRightClick, X, Y) {
-	if Gui := Object(GuiBase.Guis[GuiHwnd])
-		return Gui.ContextMenu.Call(Gui, CtrlHwnd, EventInfo, IsRightClick, X, Y)
-}
-
 /*
 	
-	Add(ControlType, Options := "", Params := "", Function := "") {
-		Gui % this.hwnd ":Add", % ControlType, % Options " hwndControlHWND", % Params
-		if Function {
-			GuiControl, +g, % ControlHWND, % Function
-			this.Controls.Push(ControlHWND)
-		}
-		return ControlHWND
-	}
 	
-	Control(Command := "", Control := "", ControlParams := "") {
-		GuiControl % this.hwnd ":" Command, % Control, % ControlParams
-	}
-	
-	Show(Options := "", Title := "") {
-		Gui % this.hwnd ":Show", % Options, % Title
-	}
-	
-	Hide(Options := "") {
-		Gui % this.hwnd ":Hide", % Options
-	}
-	
-	Default() {
-		if (A_DefaultGui != this.hwnd)
-			Gui % this.hwnd ":Default"
-	}
-	
-	DefaultListView(ListView) {
-		if (A_DefaultListView != ListView.hwnd)
-			Gui % this.hwnd ":ListView", % ListView.hwnd
-	}
-	
-	SetIcon(Icon) {
-		hIcon := DllCall("LoadImage", UInt,0, Str, Icon, UInt, 1, UInt, 0, UInt, 0, UInt, 0x10)
-		SendMessage, 0x80, 0, hIcon ,, % this.ahkid  ; One affects Title bar and
-		SendMessage, 0x80, 1, hIcon ,, % this.ahkid  ; the other the ALT+TAB menu
-	}
+
 	
 	Font(Options := "", Font := "") {
 		Gui % this.hwnd ":Font", % Options, % Font
@@ -220,25 +223,9 @@ GuiContextMenu(GuiHwnd, CtrlHwnd, EventInfo, IsRightClick, X, Y) {
 	DropFilesToggle(Toggle) {
 		this.Options((Toggle ? "+" : "-") . "E0x10")
 	}
-	
-	Escape() {
-		this.Close()
-	}
-	
-	Activate() {
-		WinActivate % this.ahkid
-	}
-	
+
 	Tab(num) {
 		Gui % this.hwnd ":Tab", % num
-	}
-	
-	Disable() {
-		Gui % this.hwnd ":+Disabled"
-	}
-	
-	Enable() {
-		Gui % this.hwnd ":-Disabled"
 	}
 	
 	ControlGet(Command, Value := "", Control := "") {

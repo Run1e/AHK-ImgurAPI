@@ -34,9 +34,18 @@ main() {
 		Client := new Imgur(Settings.client_id)
 	catch e {
 		if isinstance(e, Imgur.UploadFailure)
+			msgbox
 	}
 	
 	global IG := new ImgurGUI
+	IG.Show()
+}
+
+Exit() {
+	IG.Controls := ""
+	IG := ""
+	p("EXITING EXITING DONT KILL ME")
+	ExitApp
 }
 
 ; libs
@@ -48,3 +57,4 @@ main() {
 #Include lib\JSONFile.ahk
 
 #Include lib\Debug.ahk
+#Include lib\Hotkey.ahk

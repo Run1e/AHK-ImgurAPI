@@ -8,8 +8,6 @@ Class Imgur {
 	#Include %A_LineFile%\..\errors.ahk
 	#Include %A_LineFile%\..\clientchild.ahk
 	#Include %A_LineFile%\..\uploadworker.ahk
-	
-	; types
 	#Include %A_LineFile%\..\image.ahk
 	
 	; imgurs API endpoint

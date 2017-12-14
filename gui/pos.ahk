@@ -1,4 +1,4 @@
-﻿Class WindowPosition extends GuiBase.Position {
+﻿Class WindowPosition extends GuiBase.BasePosition {
 	Set(Coord, Val) {
 		Gui := Object(GuiBase.Guis[this.hwnd])
 		Gui.Show([{(Coord): Val}, (Gui.Visible ? "" : "Hide")])
@@ -10,7 +10,7 @@
 	}
 }
 
-Class ControlPosition extends GuiBase.Position {
+Class ControlPosition extends GuiBase.BasePosition {
 	Set(Coord, Val) {
 		GuiControl, MoveDraw, % this.hwnd, % Coord . Val
 	}
@@ -21,7 +21,7 @@ Class ControlPosition extends GuiBase.Position {
 	}
 }
 
-Class Position {
+Class BasePosition {
 	__New(hwnd) {
 		this.hwnd := hwnd
 	}

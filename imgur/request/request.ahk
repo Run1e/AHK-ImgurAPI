@@ -42,9 +42,6 @@
 			this.Callback := Callback
 			this.Headers := {}
 			
-			if Debug
-				this.DebugFunc := Debug
-			
 			this.Print(type(this) " created")
 		}
 		
@@ -54,6 +51,10 @@
 		
 		Print(x*) {
 			p(x*)
+		}
+		
+		OnResponse(Callback) {
+			this.Callback := Callback
 		}
 		
 		SetHeader(Header, Value) {
