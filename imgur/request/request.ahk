@@ -2,14 +2,15 @@
 	Class Response {
 		Headers := {}
 		
-		__New(Callback) {
+		__New(Callback, Debug := "") {
 			this.Callback := Callback
+			this.Debug := Debug
 			
-			p(type(this) " created")
+			this.Debug.Call(type(this) " created")
 		}
 		
 		__Delete() {
-			p(type(this) " destroyed")
+			this.Debug.Call(type(this) " destroyed")
 		}
 		
 		SetError(Error) {
@@ -32,7 +33,7 @@
 	Class RequestBase {
 		ThreadFile := A_LineFile "\..\requestthread.ahk"
 		
-		__New(URL, Callback) {
+		__New(URL, Callback, Debug := "") {
 			try
 				this.Script := FileOpen(this.ThreadFile, "r").Read()
 			catch e
@@ -42,11 +43,13 @@
 			this.Callback := Callback
 			this.Headers := {}
 			
-			this.Print(type(this) " created")
+			this.Debug := Debug
+			
+			this.Debug.Call(type(this) " created")
 		}
 		
 		__Delete() {
-			this.Print(type(this) " destroyed")
+			this.Debug.Call(type(this) " destroyed")
 		}
 		
 		Print(x*) {
@@ -79,7 +82,7 @@
 			for Header, Value in this.Headers
 				this.Thread.ahkFunction("AddHeader", Header, Value)
 			
-			Response := new Request.Response(this.Callback)
+			Response := new Request.Response(this.Callback, this.Debug)
 			Response.Request := this
 			ResponseShare := ObjShare(Response)
 			

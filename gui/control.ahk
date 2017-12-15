@@ -1,22 +1,29 @@
 ﻿Class ControlType {
 	__New(Gui, Options := "", Text := "") {
-		this.Gui := Gui
+		this.Gui := new GuiBase.IndirectReference(Gui)
+		
 		Gui % this.Gui.hwnd ":Add", % this.Type, % "hwndhwnd " Options, % Text
 		this.hwnd := hwnd
-		this.Position := this.Pos := new GuiBase.ControlPosition(this.hwnd)
+		this.Position := new GuiBase.ControlPosition(this.hwnd)
 		
 		this.Init()
 		
-		p(type(this) " created")
+		this.Gui.Print(type(this) " created")
 	}
 	
 	__Delete() {
 		GuiControl, -g, % this.hwnd
-		p(type(this) " destroyed")
+		this.Gui.Print(type(this) " destroyed")
+	}
+	
+	Pos {
+		get {
+			return this.Position
+		}
 	}
 	
 	SetText(Text := "") {
-		this.Gui.Control(, this.hwnd, Text)
+		GuiControl,, % this.hwnd, % Text
 	}
 	
 	GetText() {
@@ -24,7 +31,10 @@
 		return ControlText
 	}
 	
-	OnEvent(Func) {
-		GuiControl, +g, % this.hwnd, % Func
+	OnEvent(Func := "") {
+		if Func
+			GuiControl, +g, % this.hwnd, % Func
+		else
+			GuiControl, -g, % this.hwnd
 	}
 }

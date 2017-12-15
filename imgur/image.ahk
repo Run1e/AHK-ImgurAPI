@@ -1,10 +1,10 @@
-﻿Class ImageType extends Imgur.ClientChild {
+﻿Class ImageType {
 	
 	; allowed file extensions by imgur
 	static Extensions := ["JPG", "JPEG", "PNG", "GIF", "APNG", "TIFF", "PDF"]
 	
 	__New(Client, FileOrID := "") {
-		this.Client := Client
+		this.Client := new Imgur.IndirectReference(Client)
 		
 		; do file checks if a file is specified.
 		if FileExist(FileOrID) {
@@ -23,7 +23,11 @@
 		} else 
 			this.id := FileOrID
 		
-		this.Print(type(this) " created")
+		this.Client.Print(type(this) " created")
+	}
+	
+	__Delete() {
+		this.Client.Print(type(this) " destroyed")
 	}
 	
 	; upload the file. this is shorthand for:
@@ -34,19 +38,19 @@
 			throw new Imgur.MissingFileError(this.File)
 		
 		; pass the Image and the (potential) callback to the Uploader
-		this.Uploader.Upload(this, Callback)
+		this.Client.Uploader.Upload(this, Callback)
 	}
 	
 	UploadProgress(Current, Total) {
-		this.CallEvent("UploadProgress", "", this, Current, Total)
+		this.Client.CallEvent("UploadProgress", "", this, Current, Total)
 	}
 	
 	UploadResponse(Callback, Data, Header, Error) {
 		; get the exception object if there is one
 		if Error {
 			Error := ObjShare(Error)
-			this.Print(A_ThisFunc ": Error when uploading - " Error.Message)
-			this.CallEvent("UploadResponse", Callback, this, Error)
+			this.Client.Print(A_ThisFunc ": Error when uploading - " Error.Message)
+			this.Client.CallEvent("UploadResponse", Callback, this, Error)
 			return
 		}
 		
@@ -61,35 +65,36 @@
 			this[Key] := Value
 		
 		; call the event (or callback)
-		this.CallEvent("UploadResponse", Callback, this, false)
+		this.Client.CallEvent("UploadResponse", Callback, this, false)
 		
 		this.Client.Uploader.Next(true)
 	}
 	
 	Get(Callback := "") {
-		this.Print("Getting image (" this.id ")")
+		this.Client.Print("Getting image (" this.id ")")
 		
 		if !this.id
 			throw new Imgur.MissingID()
 		
 		; form a new request
-		Req := new Request.Get(this.Endpoint "image/" this.id , this.GetResponse.Bind(this, Callback))
+		Req := new Request.Get(this.Client.Endpoint "image/" this.id , this.GetResponse.Bind(this, Callback), this.Client.Print.Bind(this.Client))
 		; add the auth header
-		Req.SetHeader("Authorization", "Client-ID " this.apikey)
+		Req.SetHeader("Authorization", "Client-ID " this.Client.apikey)
 		; send the request
 		Req.Send()
 	}
 	
 	GetResponse(Callback, Resp) {
-		this.Print("GetImageResponse: " this.id)
 		
-		Data := this.ParseResponse(Resp)
+		this.Client.Print("GetImageResponse: " this.id)
+		
+		Data := this.Client.ParseResponse(Resp)
 		
 		; put in Image instance
 		for Key, Val in Data.data 
 			this[Key] := Val
 		
 		; call event
-		this.CallEvent("GetImageResponse", Callback, this, Resp)
+		this.Client.CallEvent("GetImageResponse", Callback, this, Resp)
 	}
 }

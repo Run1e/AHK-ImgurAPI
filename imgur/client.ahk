@@ -4,17 +4,21 @@
 
 Class Imgur {
 	
-	; misc 
+	; lib
+	#Include %A_LineFile%\..\lib\IndirectReference.ahk
+	
+	
+	; misc
 	#Include %A_LineFile%\..\errors.ahk
-	#Include %A_LineFile%\..\clientchild.ahk
 	#Include %A_LineFile%\..\uploadworker.ahk
 	#Include %A_LineFile%\..\image.ahk
 	
 	; imgurs API endpoint
 	static Endpoint := "https://api.imgur.com/3/"
 	
-	__New(client_id) {
+	__New(client_id, Debug := "") {
 		this.apikey := client_id
+		this.Debug := Debug
 		
 		; holds arrays of events for each event
 		this.Events := 
@@ -38,7 +42,7 @@ Class Imgur {
 	}
 	
 	Print(x*) {
-		p(x*)
+		this.Debug.Call(x*)
 	}
 	
 	; shorthand for new Imgur.ImageType(Instance, File)

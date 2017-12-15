@@ -25,10 +25,16 @@ Class ImgurGUI extends GuiBase {
 		this.Title := this.base.__Class
 		this.BackgroundColor := 0xFFFFFF
 		
-		this.Options(["+Resize", "-MaximizeBox"])
+		this.Options(["+Resize", "-MaximizeBox", "-MinimizeBox"])
 		
 		this.AddText(, "TEXTERINO")
-		this.AddEdit(, "what is up mein doot!")
+		this.AddEdit(, "what is up mein doot!").OnEvent(this.EditEvent.Bind(this))
+		
+	}
+	
+	EditEvent(hwnd, junk*) {
+		ctrl := this.GetControl(hwnd)
+		this.Print(ctrl.GetText())
 		
 	}
 	

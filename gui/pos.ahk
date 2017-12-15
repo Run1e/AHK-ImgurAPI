@@ -1,6 +1,6 @@
 ﻿Class WindowPosition extends GuiBase.BasePosition {
 	Set(Coord, Val) {
-		Gui := Object(GuiBase.Guis[this.hwnd])
+		Gui := GuiBase.GetGui(this.hwnd)
 		Gui.Show([{(Coord): Val}, (Gui.Visible ? "" : "Hide")])
 	}
 	

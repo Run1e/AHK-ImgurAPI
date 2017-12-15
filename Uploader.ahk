@@ -3,6 +3,8 @@
 #Persistent
 #WarnContinuableException off
 
+global Client, Settings, IG
+
 main()
 return
 
@@ -10,8 +12,6 @@ main() {
 	SetBatchLines -1
 	SetWinDelay, -1
 	SetWorkingDir % A_ScriptDir
-	
-	global Settings, Client
 	
 	Debug.Clear()
 	
@@ -31,18 +31,27 @@ main() {
 	Settings.Save(true)
 	
 	try
-		Client := new Imgur(Settings.client_id)
+		Client := new Imgur(Settings.client_id, Func("p"))
 	catch e {
-		if isinstance(e, Imgur.UploadFailure)
-			msgbox
+		Debug.Log(e)
+		throw e
 	}
 	
-	global IG := new ImgurGUI
-	IG.Show()
+	Client.OnEvent("UploadProgress", Func("OnProgress"))
+	
+	Client.Image("bwbgRxz").Get(Func("evnt"))
+}
+
+OnProgress(Image, Current, Total) {
+	t(Current / Total)
+}
+
+evnt(Image, Response) {
+	m(Image)
 }
 
 Exit() {
-	IG.Controls := ""
+	IG.Destroy()
 	IG := ""
 	p("EXITING EXITING DONT KILL ME")
 	ExitApp
@@ -58,3 +67,4 @@ Exit() {
 
 #Include lib\Debug.ahk
 #Include lib\Hotkey.ahk
+#Include imgur\lib\IndirectReference.ahk

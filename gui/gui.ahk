@@ -2,6 +2,9 @@
 
 Class GuiBase {
 	
+	; lib
+	#Include %A_LineFile%\..\lib\IndirectReference.ahk
+	
 	; misc
 	#Include %A_LineFile%\..\pos.ahk
 	#Include %A_LineFile%\..\imagelist.ahk
@@ -17,29 +20,31 @@ Class GuiBase {
 	
 	Controls := []
 	
-	__New(Title := "AutoHotkey Window", Options := "") {
+	__New(Title := "AutoHotkey Window", Options := "", Debug := "") {
 		this.Title := Title
+		this.Debug := Debug
 		
 		Gui, New, % "+hwndhwnd " this.CraftOptions(Options), % this.Title
 		
 		this.hwnd := hwnd
 		this.ahkid := "ahk_id" hwnd
-		GuiBase.Guis[this.hwnd] := &this
 		
-		this.Position := this.Pos := new GuiBase.WindowPosition(this.hwnd)
+		GuiBase.Guis[this.hwnd] := new GuiBase.IndirectReference(this)
+		this.Position := new GuiBase.WindowPosition(this.hwnd)
 		
 		this.DropFilesToggle(false) ; disable drag-drop by default
-		
 		this.Init()
 		
-		p(this.base.__Class " created")
+		this.Print(this.base.__Class " created")
 	}
 	
 	__Delete() {
-		this.Controls := ""
-		if this.Visible
-			this.Destroy()
-		p(this.base.__Class " destroyed")
+		try this.Destroy()
+		this.Print(this.base.__Class " destroyed")
+	}
+	
+	Print(x*) {
+		this.Debug.Call(x*)
 	}
 	
 	Show(Options := "") {
@@ -66,7 +71,7 @@ Class GuiBase {
 	}
 	
 	GetControl(hwnd) {
-		for Index, Ctrl in this.Controls
+		for Index, Ctrl in this.Controls 
 			if Ctrl.hwnd = hwnd
 				return Ctrl
 	}
@@ -140,6 +145,12 @@ Class GuiBase {
 	}
 	
 	; PROPERTIES
+	
+	Pos {
+		get {
+			return this.Position
+		}
+	}
 	
 	Visible {
 		get {
@@ -238,41 +249,9 @@ Class GuiBase {
 		return out
 	}
 	
-	Pos(x := "", y := "", w := "", h := "") {
-		this.Show(  (StrLen(x) ? "x" x : "") . " "
-				. (StrLen(y) ? "y" y : "") . " "
-				. (StrLen(w) ? "w" w : "") . " "
-				. (StrLen(h) ? "h" h : "") . " "
-				. (this.IsVisible ? "" : "Hide"))
-	}
-	
-	Destroy() {
-		for Index, Control in this.Controls
-			GuiControl, -g, % Control
-		Gui % this.hwnd ":Destroy"
-		this.IsVisible := false
-		Gui.Instances[this.hwnd] := ""
-	}
-	
-	Color(BackgroundColor := "", ControlColor := "") {
-		Gui % this.hwnd ":Color", % BackgroundColor, % ControlColor
-	}
-	
-	Options(Options) {
-		Gui % this.hwnd ":" Options
-	}
 	
 	
 	Submit(Hide := false, Options := "") {
 		Gui % this.hwnd ":Submit", % (this.IsVisible := !Hide ? "" : "NoHide") " " Options
-	}
-	
-	GetText(Control) {
-		ControlGetText, ControlText, % Control, % this.ahkid
-		return ControlText
-	}
-	
-	SetText(Control, Text := "") {
-		this.Control(, Control, Text)
 	}
 */

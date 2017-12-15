@@ -1,21 +1,20 @@
-﻿Class UploadWorker extends Imgur.ClientChild {
+﻿Class UploadWorker {
 	
 	; worker thread code
 	ThreadFile := A_LineFile "\..\uploadthread.ahk"
 	
 	__New(Client) {
-		this.Client := Client
+		this.Client := new Imgur.IndirectReference(Client)
 		
 		; throw WorkerLaunchFailure if we fail at reading the file
 		if !File := FileOpen(this.ThreadFile, "r")
 			throw new Imgur.WorkerLaunchFailure("Failed opening " this.ThreadFile)
 		
-		
 		this.Queue := []
 		this.Busy := false
 		
 		; read the file contents and close file object
-		this.Script := "global Endpoint := """ this.Endpoint """`nglobal client_id := """ this.apikey """`n" File.Read()
+		this.Script := "global Endpoint := """ this.Client.Endpoint """`nglobal client_id := """ this.Client.apikey """`n" File.Read()
 		File.Close()
 		
 		; launch thread
