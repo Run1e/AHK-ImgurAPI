@@ -4,7 +4,7 @@
 	ThreadFile := A_LineFile "\..\uploadthread.ahk"
 	
 	__New(Client) {
-		this.Client := new Imgur.IndirectReference(Client)
+		this.Client := new indirectReference(Client)
 		
 		; throw WorkerLaunchFailure if we fail at reading the file
 		if !File := FileOpen(this.ThreadFile, "r")

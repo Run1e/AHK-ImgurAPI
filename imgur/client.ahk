@@ -4,10 +4,6 @@
 
 Class Imgur {
 	
-	; lib
-	#Include %A_LineFile%\..\lib\IndirectReference.ahk
-	
-	
 	; misc
 	#Include %A_LineFile%\..\errors.ahk
 	#Include %A_LineFile%\..\uploadworker.ahk
@@ -17,6 +13,11 @@ Class Imgur {
 	static Endpoint := "https://api.imgur.com/3/"
 	
 	__New(client_id, Debug := "") {
+		if !IsObject(indirectReference) {
+			run https://github.com/nnnik/indirectReference
+			throw "Missing dependency: indirectReference library by nnnik"
+		}
+		
 		this.apikey := client_id
 		this.Debug := Debug
 		
@@ -92,13 +93,38 @@ Class Imgur {
 		!!! PRIVATE METHODS !!!
 	*/
 	
+	/*
+		if the only error is a json error, that will be our error
+			
+		if resp.error exists, that will be our error since it'll be critical
+	*/
+	
 	ParseResponse(Resp) {
-		Data := JSON.Load(Resp.ResponseText)
-		return Data
+		Error := false
+		
+		try 
+			Data := JSON.Load(Resp.ResponseText)
+		catch e
+			Error := new Imgur.BadResponse({JSONError: e})
+		
+		if Resp.Error {
+			Error := new Imgur.RequestError({What: Resp.Error.Extra, Extra: Resp.Error.Message})
+			if IsObject(Data)
+				Error.Data := Data
+		} else if (Resp.Status != 200) {
+			Error := new Imgur[Resp.Status "HTTPError"]
+			if IsObject(Data) {
+				Error.Data := Data
+				Error.What := Data.Status
+				Error.Extra := Data.Data.Error
+			}
+		}
+		
+		return {Data: Data.data, Error: Error}
 	}
 	
 	/*
-		call an event.
+			call an event.
 		
 		callback provided? the event should not be raised.
 		not? then run the event.

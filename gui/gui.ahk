@@ -2,9 +2,6 @@
 
 Class GuiBase {
 	
-	; lib
-	#Include %A_LineFile%\..\lib\IndirectReference.ahk
-	
 	; misc
 	#Include %A_LineFile%\..\pos.ahk
 	#Include %A_LineFile%\..\imagelist.ahk
@@ -21,6 +18,11 @@ Class GuiBase {
 	Controls := []
 	
 	__New(Title := "AutoHotkey Window", Options := "", Debug := "") {
+		if !IsObject(indirectReference) {
+			run https://github.com/nnnik/indirectReference
+			throw "Missing dependency: indirectReference library by nnnik"
+		}
+		
 		this.Title := Title
 		this.Debug := Debug
 		
@@ -29,7 +31,7 @@ Class GuiBase {
 		this.hwnd := hwnd
 		this.ahkid := "ahk_id" hwnd
 		
-		GuiBase.Guis[this.hwnd] := new GuiBase.IndirectReference(this)
+		GuiBase.Guis[this.hwnd] := new indirectReference(this)
 		this.Position := new GuiBase.WindowPosition(this.hwnd)
 		
 		this.DropFilesToggle(false) ; disable drag-drop by default
@@ -39,12 +41,12 @@ Class GuiBase {
 	}
 	
 	__Delete() {
-		try this.Destroy()
+		this.Destroy()
 		this.Print(this.base.__Class " destroyed")
 	}
 	
 	Print(x*) {
-		this.Debug.Call(x*)
+		try this.Debug.Call(x*)
 	}
 	
 	Show(Options := "") {
@@ -57,7 +59,8 @@ Class GuiBase {
 	
 	Destroy() {
 		this.Controls := ""
-		Gui % this.hwnd ":Destroy"
+		try
+			Gui % this.hwnd ":Destroy"
 	}
 	
 	SetDefault() {
@@ -161,6 +164,8 @@ Class GuiBase {
 			return !!exist
 		}
 	}
+	
+	
 	
 	Title {
 		set {

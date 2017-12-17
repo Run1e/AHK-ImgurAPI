@@ -3,6 +3,7 @@
 	
 	__New(Data := "") {
 		ex := Exception(this.Message)
+		ex.Delete("File", "Line", "What")
 		ex.base := this.base
 		if IsObject(Data)
 			for Key, Val in Data
@@ -14,32 +15,35 @@
 ; REQUEST // HTTP ERRORS
 
 Class 400HTTPError extends Imgur.BaseException {
-	Message := "Bad Request: Required input parameter/file missing or out of bounds."
+	Message := "400 Bad Request: Required input parameter/file missing or out of bounds."
 }
 
 Class 401HTTPError extends Imgur.BaseException {
-	Message := "Unauthorized: Request requires user authentication."
+	Message := "401 Unauthorized: Request requires user authentication."
 }
 
 Class 403HTTPError extends Imgur.BaseException {
-	Message := "Forbidden: You do not have access to this action."
+	Message := "403 Forbidden: You do not have access to this action."
 }
 
 Class 404HTTPError extends Imgur.BaseException {
-	Message := "Not Found: Requested data does not exist."
+	Message := "404 Not Found: Requested data does not exist."
 }
 
 Class 429HTTPError extends Imgur.BaseException {
-	Message := "Too Many Requests: Rate limit on application or IP reached."
+	Message := "429 Too Many Requests: Rate limit on application or IP reached."
 }
 
 Class 500HTTPError extends Imgur.BaseException {
-	Message := "Internal Server Error: Something is broken with Imgur."
+	Message := "500 Internal Server Error: Something is broken with Imgur."
+}
+
+Class RequestError extends Imgur.BaseException {
+	Message := "Request thread threw an error."
 }
 
 Class BadResponse extends Imgur.BaseException {
-	; response was not intelligible.
-	Message := "HTTP error occured."
+	Message := "Bad response: Response from Imgur unintelligble."
 }
 
 ; UPLOADER

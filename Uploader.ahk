@@ -39,14 +39,18 @@ main() {
 	
 	Client.OnEvent("UploadProgress", Func("OnProgress"))
 	
-	Client.Image("bwbgRxz").Get(Func("evnt"))
+	Client.Image("3sys1R6").Get(Func("evnt"))
 }
 
 OnProgress(Image, Current, Total) {
 	t(Current / Total)
 }
 
-evnt(Image, Response) {
+evnt(Image, Response, Error) {
+	if Error {
+		m("Error", type(error), Error.Message)
+		return
+	}
 	m(Image)
 }
 
@@ -67,4 +71,4 @@ Exit() {
 
 #Include lib\Debug.ahk
 #Include lib\Hotkey.ahk
-#Include imgur\lib\IndirectReference.ahk
+#Include lib\indirectReference.ahk

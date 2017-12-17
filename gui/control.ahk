@@ -1,6 +1,6 @@
 ﻿Class ControlType {
 	__New(Gui, Options := "", Text := "") {
-		this.Gui := new GuiBase.IndirectReference(Gui)
+		this.Gui := new indirectReference(Gui)
 		
 		Gui % this.Gui.hwnd ":Add", % this.Type, % "hwndhwnd " Options, % Text
 		this.hwnd := hwnd

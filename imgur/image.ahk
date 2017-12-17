@@ -4,7 +4,7 @@
 	static Extensions := ["JPG", "JPEG", "PNG", "GIF", "APNG", "TIFF", "PDF"]
 	
 	__New(Client, FileOrID := "") {
-		this.Client := new Imgur.IndirectReference(Client)
+		this.Client := new indirectReference(Client)
 		
 		; do file checks if a file is specified.
 		if FileExist(FileOrID) {
@@ -23,11 +23,15 @@
 		} else 
 			this.id := FileOrID
 		
-		this.Client.Print(type(this) " created")
+		this.Print(type(this) " created")
 	}
 	
 	__Delete() {
-		this.Client.Print(type(this) " destroyed")
+		this.Print(type(this) " destroyed")
+	}
+	
+	Print(x*) {
+		try this.Client.Print(x*)
 	}
 	
 	; upload the file. this is shorthand for:
@@ -85,16 +89,15 @@
 	}
 	
 	GetResponse(Callback, Resp) {
+		this.Client.Print("GetImage response (" this.id ")")
 		
-		this.Client.Print("GetImageResponse: " this.id)
+		Result := this.Client.ParseResponse(Resp)
 		
-		Data := this.Client.ParseResponse(Resp)
-		
-		; put in Image instance
-		for Key, Val in Data.data 
-			this[Key] := Val
+		if !Result.Error
+			for Key, Value in Result.Data
+				this[Key] := Value
 		
 		; call event
-		this.Client.CallEvent("GetImageResponse", Callback, this, Resp)
+		this.Client.CallEvent("GetImageResponse", Callback, this, Resp, Result.Error)
 	}
 }

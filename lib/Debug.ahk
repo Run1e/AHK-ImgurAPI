@@ -81,7 +81,7 @@ Class Debug {
 							out .= " " this.Arrow " " Value
 					}
 				}
-			return SubStr(out, 2) . "`n"
+			return SubStr(out, 2) "`n"
 		}
 	}
 	
