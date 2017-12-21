@@ -23,11 +23,11 @@
 		} else 
 			this.id := FileOrID
 		
-		this.Print(type(this) " created")
+		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
-		this.Print(type(this) " destroyed")
+		this.Print(this.__Class " destroyed")
 	}
 	
 	Print(x*) {

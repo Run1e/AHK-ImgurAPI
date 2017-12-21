@@ -37,12 +37,12 @@ Class GuiBase {
 		this.DropFilesToggle(false) ; disable drag-drop by default
 		this.Init()
 		
-		this.Print(this.base.__Class " created")
+		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
 		this.Destroy()
-		this.Print(this.base.__Class " destroyed")
+		this.Print(this.__Class " destroyed")
 	}
 	
 	Print(x*) {
@@ -74,13 +74,11 @@ Class GuiBase {
 	}
 	
 	GetControl(hwnd) {
-		for Index, Ctrl in this.Controls 
-			if Ctrl.hwnd = hwnd
-				return Ctrl
+		return this.Controls[hwnd]
 	}
 	
 	Options(Options) {
-		Gui % this.hwnd ":" Options
+		Gui % this.hwnd ":" this.CraftOptions(Options)
 	}
 	
 	DropFilesToggle(Toggle) {
@@ -88,7 +86,14 @@ Class GuiBase {
 	}
 	
 	Control(Command := "", Control := "", ControlParams := "") {
-		GuiControl % this.hwnd ":" Command, % Control, % ControlParams
+		if IsObject(Control) {
+			if !Control.HasKey("hwnd")
+				throw this.__Class ".Control: provided control object has no hwnd attribute"
+			hwnd := Control.hwnd
+		} else
+			hwnd := Control
+		
+		GuiControl % this.hwnd ":" Command, % hwnd, % ControlParams
 	}
 	
 	Margins(x := "", y := "") {
@@ -117,24 +122,24 @@ Class GuiBase {
 	
 	AddText(Options := "", Text := "") {
 		Control := new GuiBase.TextControl(this, this.CraftOptions(Options), Text)
-		return this.Controls[this.Controls.Push(Control)]
+		return this.Controls[Control.hwnd] := Control
 	}
 	
 	AddEdit(Options := "", Text := "") {
 		Control := new GuiBase.EditControl(this, this.CraftOptions(Options), Text)
-		return this.Controls[this.Controls.Push(Control)]
+		return this.Controls[Control.hwnd] := Control
 	}
 	
 	AddButton(Options := "", Text := "") {
 		Control := new GuiBase.ButtonControl(this, this.CraftOptions(Options), Text)
-		return this.Controls[this.Controls.Push(Control)]
+		return this.Controls[Control.hwnd] := Control
 	}
 	
 	AddListView(Options := "", Headers := "") {
 		for Index, Header in Headers
 			HeaderText .= "|" Header
 		Control := new GuiBase.ListViewControl(this, this.CraftOptions(Options), SubStr(HeaderText, 2))
-		return this.Controls[this.Controls.Push(Control)]
+		return this.Controls[Control.hwnd] := Control
 	}
 	
 	; DEFAULT EVENT HANDLERS

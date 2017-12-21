@@ -3,9 +3,14 @@
 #Persistent
 #WarnContinuableException off
 
-global Client, Settings, IG
+global Client, Settings, IG, pToken
 
-main()
+; catch startup errors
+try
+	main()
+catch e
+	throw e
+
 return
 
 main() {
@@ -15,31 +20,44 @@ main() {
 	
 	Debug.Clear()
 	
+	pToken := Gdip_Startup()
+	
 	if !FileExist("data")
 		FileCreateDir data
 	
 	Settings := new JSONFile("data/settings.json")
 	
-	Defaults :=
-	( LTrim Join
-	{
-		client_id: "45a0e7fa6727f61"
-	}
-	)
-	
-	Settings.Fill(Defaults)
+	Settings.Fill(DefaultSettings())
 	Settings.Save(true)
 	
-	try
-		Client := new Imgur(Settings.client_id, Func("p"))
-	catch e {
-		Debug.Log(e)
-		throw e
+	Client := new Imgur(Settings.client_id, Func("p"))
+	
+	/*
+		Client.OnEvent("UploadProgress", Func("OnProgress"))
+		Client.Image("3sys1R6").Get(Func("evnt"))
+	*/
+	
+	IG := new ImgurGUI("Imgur Uploader",, Func("P"))
+	
+	IG.Show([{w: Settings.Window.Width, h: Settings.Window.Height}])
+}
+
+DefaultSettings() {
+	return _:=
+	( LTrim Join
+	{
+		client_id: "45a0e7fa6727f61",
+		Image: {
+			Width: 256,
+			Height: 144,
+			Spacing: 8
+		},
+		Window: {
+			Width: 800,
+			Height: 500
+		}
 	}
-	
-	Client.OnEvent("UploadProgress", Func("OnProgress"))
-	
-	Client.Image("3sys1R6").Get(Func("evnt"))
+	)
 }
 
 OnProgress(Image, Current, Total) {
@@ -48,17 +66,20 @@ OnProgress(Image, Current, Total) {
 
 evnt(Image, Response, Error) {
 	if Error {
-		m("Error", type(error), Error.Message)
+		m("Error", class(error), Error.Message)
 		return
 	}
 	m(Image)
 }
 
 Exit() {
-	IG.Destroy()
-	IG := ""
-	p("EXITING EXITING DONT KILL ME")
+	Settings.Save(true)
+	Gdip_Shutdown(pToken)
 	ExitApp
+}
+
+Print(x*) {
+	p(x*)
 }
 
 ; libs
@@ -69,6 +90,12 @@ Exit() {
 #Include lib\ImgurGUI.ahk
 #Include lib\JSONFile.ahk
 
+; misc
 #Include lib\Debug.ahk
 #Include lib\Hotkey.ahk
-#Include lib\indirectReference.ahk
+#Include lib\CustomImageList.ahk
+
+; third party
+#Include lib\third-party\Gdip.ahk
+#Include lib\third-party\indirectReference.ahk
+#Include lib\third-party\LV_EX.ahk

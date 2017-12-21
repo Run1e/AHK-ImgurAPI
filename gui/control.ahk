@@ -8,18 +8,26 @@
 		
 		this.Init()
 		
-		this.Gui.Print(type(this) " created")
+		this.Gui.Print(this.__Class " created")
 	}
 	
 	__Delete() {
 		GuiControl, -g, % this.hwnd
-		this.Gui.Print(type(this) " destroyed")
+		this.Gui.Print(this.__Class " destroyed")
 	}
 	
 	Pos {
 		get {
 			return this.Position
 		}
+	}
+	
+	Options(Options) {
+		GuiControl % this.Gui.hwnd ":" this.Gui.CraftOptions(Options), % this.hwnd
+	}
+	
+	Control(Command := "", ControlOptions := "") {
+		GuiControl % this.Gui.hwnd ":" Command, % this.hwnd, % ControlOptions
 	}
 	
 	SetText(Text := "") {

@@ -34,12 +34,12 @@ Class Imgur {
 		; create the image upload worker
 		this.Uploader := new Imgur.UploadWorker(this)
 		
-		this.Print(type(this) " created")
+		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
 		this.Uploader := ""
-		this.Print(type(this) " destroyed")
+		this.Print(this.__Class " destroyed")
 	}
 	
 	Print(x*) {
@@ -139,12 +139,12 @@ Class Imgur {
 }
 
 ; checks if Instance is an instance of Class
-isinstance(instance, base) {
-	return type(instance) = base.__Class
+isinstance(instance, class) {
+	return class(instance) = class(class)
 }
 
-type(instance) {
-	return instance.base.__Class
+class(instance) {
+	return instance.__Class
 }
 
 ; checks if a normal array has a value

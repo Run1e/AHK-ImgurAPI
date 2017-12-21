@@ -25,14 +25,14 @@
 			sleep 20
 		until this.Thread.ahkgetvar.finished
 		
-		this.Print(this.base.__Class " created")
+		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
 		;this.Thread.ahkExec("Client := """"")
 		ahkthread_free(this.Thread)
 		this.Thread := ""
-		this.Client.Print(this.base.__Class " destroyed")
+		this.Client.Print(this.__Class " destroyed")
 	}
 	
 	; move to the next item in the queue

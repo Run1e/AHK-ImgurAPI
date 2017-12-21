@@ -9,21 +9,23 @@
 	
 	Class RequestBase {
 		__New(URL, Callback, Debug := "") {
-			try
-				this.Script := FileOpen(A_LineFile "\..\requestthread.ahk", "r").Read()
-			catch e
-				throw Exception("Failed reading thread script data", -1, this.ThreadFile)
+			if !this.Script {
+				try
+					this.base.Script := FileOpen(A_LineFile "\..\requestthread.ahk", "r").Read()
+				catch e
+					throw Exception("Failed reading thread script data", -1)
+			}
 			
 			this.URL := URL
 			this.Callback := Callback
 			this.Headers := {}
 			this.Debug := Debug
 			
-			this.Print(type(this) " created: " URL)
+			this.Print(this.__Class " created: " URL)
 		}
 		
 		__Delete() {
-			this.Print(type(this) " destroyed")
+			this.Print(this.__Class " destroyed")
 		}
 		
 		Print(x*) {
@@ -32,7 +34,7 @@
 		
 		SetHeader(Header, Value) {
 			this.Headers[Header] := Value
-			this.Print(type(this) ".SetHeader: " Header " -> " Value)
+			this.Print(this.__Class ".SetHeader: " Header " -> " Value)
 		}
 		
 		Send() {
@@ -55,7 +57,7 @@
 			
 			this.Thread.ahkPostFunction("Send")
 			
-			this.Print(type(this) ".Send")
+			this.Print(this.__Class ".Send")
 		}
 	}
 	
@@ -66,11 +68,11 @@
 			this.Callback := Callback
 			this.Debug := Debug
 			
-			this.Debug.Call(type(this) " created")
+			this.Debug.Call(this.__Class " created")
 		}
 		
 		__Delete() {
-			this.Debug.Call(type(this) " destroyed")
+			this.Debug.Call(this.__Class " destroyed")
 		}
 		
 		SetError(Error) {

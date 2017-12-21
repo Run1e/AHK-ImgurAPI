@@ -5,6 +5,9 @@
 	
 	__New(InitialCount := 5, GrowCount := 2, LargeIcons := false) {
 		this.id := IL_Create(InitialCount, GrowCount, LargeIcons)
+		this.InitialCount := InitialCount
+		this.GrowCount := GrowCount
+		this.LargeIcons := LargeIcons
 	}
 	
 	__Delete() {

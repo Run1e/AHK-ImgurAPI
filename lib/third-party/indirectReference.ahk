@@ -1,19 +1,19 @@
-﻿	/*
-		CLASS indirectReference
-		author:			nnnik
-		
-		description:	A class that is able to create safe indirect references that allow access to an object without creating a reference.
-		This allows AutoHotkey to perform deletion of Object once all direct references are freed.
-		You can use this to avoid circular references.
-		
-		usage:				newIndirectReference := new indirectReference( object, modes := { __Set:0, __Get:0, __Delete:0 } )
-		
-		newIndirectReference:	The indirect reference towards the objects passed to the constructor
-		
-		object:				The object you want to refer to indirectly
-		
-		modeOrModeStr:			Controls how the indirectReference is connected to the object directly
-							e.g. with a __Call mode all method calls towards the indirectReference will end up calling the same method with the same parameters in the object
+﻿/*
+	CLASS indirectReference
+	author:			nnnik
+	
+	description:	A class that is able to create safe indirect references that allow access to an object without creating a reference.
+	This allows AutoHotkey to perform deletion of Object once all direct references are freed.
+	You can use this to avoid circular references.
+	
+	usage:				newIndirectReference := new indirectReference( object, modes := { __Set:0, __Get:0, __Delete:0 } )
+	
+	newIndirectReference:	The indirect reference towards the objects passed to the constructor
+	
+	object:				The object you want to refer to indirectly
+	
+	modeOrModeStr:			Controls how the indirectReference is connected to the object directly
+						e.g. with a __Call mode all method calls towards the indirectReference will end up calling the same method with the same parameters in the object
 */
 
 class indirectReference

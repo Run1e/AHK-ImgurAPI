@@ -3,12 +3,12 @@
 	
 	Add(Options := "", Fields*) {
 		this.SetDefault()
-		return LV_Add(Options, Fields*)
+		return LV_Add(this.Gui.CraftOptions(Options), Fields*)
 	}
 	
 	Insert(Row, Options := "", Col*) {
 		this.SetDefault()
-		return LV_Insert(Row, Options, Col*)
+		return LV_Insert(Row, this.Gui.CraftOptions(Options), Col*)
 	}
 	
 	Delete(Row := "") {
@@ -50,10 +50,10 @@
 		return this.Gui.Control((Toggle?"+":"-") "Redraw", this.hwnd)
 	}
 	
-	SetImageList(ImageList, LargeIcons := false) {
+	SetImageList(ImageList) {
 		this.SetDefault()
 		this.ImageList := this.IL := ImageList
-		return LV_SetImageList(this.ImageList.id, !LargeIcons)
+		return LV_SetImageList(this.ImageList.id, !ImageList.LargeIcons)
 	}
 	
 	SetDefault() {

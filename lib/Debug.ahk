@@ -18,7 +18,7 @@ Class Debug {
 		static instance := new Debug()
 		if instance
 			return instance
-		class := this.base.__Class
+		class := this.__Class
 		%class% := this
 		
 		try
@@ -132,7 +132,7 @@ Class Timer {
 		static instance := new Timer()
 		if instance
 			return instance
-		class := this.base.__Class
+		class := this.__Class
 		%class% := this
 		
 		DllCall("QueryPerformanceFrequency", "Int64P", F)
