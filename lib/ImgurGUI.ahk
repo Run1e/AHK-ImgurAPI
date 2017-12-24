@@ -25,15 +25,16 @@
 Class ImgurGUI extends GuiBase {
 	Init() {
 		
-		this.BackgroundColor := 0x121212
+		;this.BitmapLoader := AhkThread()
+		
+		this.BackgroundColor := 0x161616
 		
 		this.Options([{("+MinSize"): "540x256"}, "+Resize", "+Border"])
 		
-		this.ImageLV := this.AddListView([{x: 0, y: 0, ("+Background"): 121212}, "-Hdr", "-Border"], ["FuckAjitPai|id"])
+		this.ImageLV := this.AddListView([{x: 0, y: 0, ("+Background"): 161616}, "-Hdr", "-Border"], ["FuckAjitPai|id"])
 		this.ImageLV.ModifyCol(1, 0)
 		this.ImageLV.ModifyCol(2, 0)
 		this.ImageLV.SetImageList(new CustomImageList(Settings.Image.Width, Settings.Image.Height, 0x20))
-		
 		
 		Loop 20
 			this.ImageAdd(A_ScriptDir "\pic.jpg")
@@ -64,6 +65,10 @@ Class ImgurGUI extends GuiBase {
 		this.ImageLV.Options(["+Report"])
 		this.ImageLV.Options(["+Icon"])
 		;this.ImageLV.Modify(1, "Vis")
+	}
+	
+	UploadProgress(Image, Current, Total) {
+		t(Image, Current/Total)
 	}
 	
 	Size(EventInfo, Width, Height) {

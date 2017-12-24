@@ -1,15 +1,19 @@
-﻿m(x*) {
-	msgbox % Debug.Printer(x*)
+﻿disp(x*) {
+	return Debug.Printer(x*)
+}
+
+m(x*) {
+	msgbox % disp(x*)
 }
 
 p(x*) {
 	static First := true ; haha hackety fuckin hack
-	Debug.Print((First ? ("", First := false) : "`n") . Debug.Printer(x*))
+	Debug.Print((First ? ("", First := false) : "`n") . Disp(x*))
 }
 
 t(x*) {
 	static thisfunc := Func("t")
-	tooltip % x ? Debug.Printer(x*) : ""
+	tooltip % x ? disp(x*) : ""
 	SetTimer, % thisfunc, % x ? 3500 : "Off"
 }
 
@@ -50,41 +54,6 @@ Class Debug {
 		; runs if program runs and it couldn't connect to the studio output pane
 	}
 	
-	Class Printer extends Debug.Functor {
-		static IgnoreKeys := {Client: 0, Thread: 0, Script: 0}
-		static Indent := "    "
-		static OpenClose := ["[", "]"]
-		static Arrow := "->"
-		
-		Call(Print*) {
-			for Index, Value in Print
-				text .= "`n" . (IsObject(Value) ? this.Object(Value) : Value)
-			return SubStr(text, 2)
-		}
-		
-		Object(Object, Depth := 5, Indent := "", Seen := "") {
-			if !Seen
-				Seen := []
-			if Depth
-				try {
-					for Key, Value in Object {
-						if this.IgnoreKeys.HasKey(Key)
-							continue
-						out .= "`n" Indent this.OpenClose.1 Key this.OpenClose.2
-						if IsObject(Value) {
-							if Seen.HasKey(&Value) {
-								out .= " " this.Arrow " SKIP"
-								continue
-							} Seen[&Value] := ""
-							out .= "`n" this.Object(Value, Depth - 1, Indent this.Indent, Seen)	
-						} else
-							out .= " " this.Arrow " " Value
-					}
-				}
-			return SubStr(out, 2) "`n"
-		}
-	}
-	
 	Class Log extends Debug.Functor {
 		static LogFolder := A_ScriptDir "\logs" 
 		
@@ -123,6 +92,46 @@ Class Debug {
 	Class Functor {
 		__Call(Type, Param*) {
 			return (new this).Call(Param*)
+		}
+	}
+	
+	Class Printer extends Debug.Functor {
+		static Indent := "      "
+		static Open := "["
+		static Close := "]"
+		static Arrow := " -> "
+		static TopSplit := "`n"
+		
+		Call(Print*) {
+			for Index, Value in Print
+				text .= "`n" . (IsObject(Value) ? this.Object(Value) : Value)
+			return SubStr(text, 2)
+		}
+		
+		Object(Object, Indent := "", Seen := "") {
+			if !Seen
+				Seen := [], Top := true
+			try {
+				for Key, Value in Object {
+					out .= "`n" Indent this.Open Key this.Close
+					if IsFunc(Value)
+						out .= this.Arrow Value.Name
+					else if IsObject(Value) {
+						if Seen.HasKey(&Value) {
+							out .= this.Arrow "(ALREADY PRINTED)"
+							continue
+						} Seen[&Value] := ""
+						ObjVal := this.Object(Value, Indent this.Indent, Seen)
+						out .= (ObjVal ? "`n" ObjVal : this.Arrow "[]")
+					} else if (value * 0 = 0)
+						out .= this.Arrow Value
+					else
+						out .= this.Arrow """" Value """"
+					if Top
+						out .= this.TopSplit
+				}
+			}
+			return SubStr(out, 2)
 		}
 	}
 }

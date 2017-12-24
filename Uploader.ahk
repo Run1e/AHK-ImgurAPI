@@ -30,16 +30,14 @@ main() {
 	Settings.Fill(DefaultSettings())
 	Settings.Save(true)
 	
-	Client := new Imgur(Settings.client_id, Func("p"))
-	
-	/*
-		Client.OnEvent("UploadProgress", Func("OnProgress"))
-		Client.Image("3sys1R6").Get(Func("evnt"))
-	*/
-	
 	IG := new ImgurGUI("Imgur Uploader",, Func("P"))
-	
 	IG.Show([{w: Settings.Window.Width, h: Settings.Window.Height}])
+	
+	Client := new Imgur(Settings.client_id, Func("p"))
+	Client.OnEvent("UploadProgress", IG.UploadProgress.Bind(IG))
+	;Client.Image("pic.jpg").Upload()
+	
+	
 }
 
 DefaultSettings() {

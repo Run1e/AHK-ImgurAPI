@@ -121,25 +121,27 @@ Class GuiBase {
 	; ADD CONTROLS
 	
 	AddText(Options := "", Text := "") {
-		Control := new GuiBase.TextControl(this, this.CraftOptions(Options), Text)
-		return this.Controls[Control.hwnd] := Control
+		return this.AddControl("Text", Options, Text)
 	}
 	
 	AddEdit(Options := "", Text := "") {
-		Control := new GuiBase.EditControl(this, this.CraftOptions(Options), Text)
-		return this.Controls[Control.hwnd] := Control
+		return this.AddControl("Edit", Options, Text)
 	}
 	
 	AddButton(Options := "", Text := "") {
-		Control := new GuiBase.ButtonControl(this, this.CraftOptions(Options), Text)
-		return this.Controls[Control.hwnd] := Control
+		return this.AddControl("Button", Options, Text)
 	}
 	
 	AddListView(Options := "", Headers := "") {
 		for Index, Header in Headers
 			HeaderText .= "|" Header
-		Control := new GuiBase.ListViewControl(this, this.CraftOptions(Options), SubStr(HeaderText, 2))
-		return this.Controls[Control.hwnd] := Control
+		return this.AddControl("ListView", Options, SubStr(HeaderText, 2))
+	}
+	
+	AddControl(Control, Options := "", Text := "") {
+		ControlClass := GuiBase[Control . "Control"] ; yes, this apparently works
+		Ctrl := new ControlClass(this, this.CraftOptions(Options), Text)
+		return this.Controls[Ctrl.hwnd] := Ctrl
 	}
 	
 	; DEFAULT EVENT HANDLERS
