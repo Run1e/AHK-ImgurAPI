@@ -5,9 +5,11 @@
 		ex := Exception(this.Message)
 		ex.Delete("File", "Line", "What")
 		ex.base := this.base
-		if IsObject(Data)
+		if IsObject(Data) {
 			for Key, Val in Data
 				ex[Key] := Val
+		} else if StrLen(Data)
+			ex.Extra := Data
 		return ex
 	}
 }

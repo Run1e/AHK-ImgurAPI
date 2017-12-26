@@ -34,6 +34,13 @@
 		try this.Client.Print(x*)
 	}
 	
+	FileName {
+		get {
+			static assoc := {"image/jpeg": "jpg"}
+			return this.id "." assoc[this.type]
+		}
+	}
+	
 	; upload the file. this is shorthand for:
 	; Client.Upload(Image, Callback := "")
 	Upload(Callback := "") {

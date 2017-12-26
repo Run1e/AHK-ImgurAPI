@@ -37,7 +37,10 @@ Class Debug {
 	}
 	
 	Print(Print*) {
-		this.Pane.Print(Debug.Printer(Print*))
+		try 
+			this.Pane.Print(Debug.Printer(Print*))
+		catch e
+			this.StudioNotRunning()
 	}
 	
 	Clear() {
@@ -61,6 +64,7 @@ Class Debug {
 			if !FileExist(this.LogFolder)
 				FileCreateDir % this.LogFolder
 			this.Exception(Exception)
+			soundbeep
 		}
 		
 		Exception(ex, data := "") {

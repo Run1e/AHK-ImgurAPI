@@ -1,4 +1,4 @@
-﻿Class ControlType {
+﻿Class ControlBase {
 	__New(Gui, Options := "", Text := "") {
 		this.Gui := new indirectReference(Gui)
 		

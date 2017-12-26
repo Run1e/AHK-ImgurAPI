@@ -1,7 +1,7 @@
-﻿Class UploadWorker {
+﻿Class UploadWorker extends Imgur.Queue {
 	
 	; worker thread code
-	ThreadFile := A_LineFile "\..\uploadthread.ahk"
+	ThreadFile := A_LineFile "\..\UploadThread.ahk"
 	
 	__New(Client) {
 		this.Client := new indirectReference(Client)
@@ -33,23 +33,6 @@
 		ahkthread_free(this.Thread)
 		this.Thread := ""
 		this.Client.Print(this.__Class " destroyed")
-	}
-	
-	; move to the next item in the queue
-	Next(Pop := false) {
-		; remove the last queue item if told to
-		if Pop
-			this.Queue.RemoveAt(1)
-		
-		; stop queue if there's nothing left
-		if this.Busy && !this.Queue.Length()
-			return this.Busy := false
-		
-		; otherwise, call the next queue boundfunc and set this.Busy accordingly
-		if this.Queue.Length()
-			this.Busy := true, this.Queue[1].Call()
-		else
-			this.Busy := false
 	}
 	
 	; add an image to the upload queue

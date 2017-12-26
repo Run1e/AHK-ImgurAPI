@@ -5,9 +5,10 @@
 Class Imgur {
 	
 	; misc
-	#Include %A_LineFile%\..\errors.ahk
-	#Include %A_LineFile%\..\uploadworker.ahk
-	#Include %A_LineFile%\..\image.ahk
+	#Include %A_LineFile%\..\Errors.ahk
+	#Include %A_LineFile%\..\Queue.ahk
+	#Include %A_LineFile%\..\UploadWorker.ahk
+	#Include %A_LineFile%\..\types\Image.ahk
 	
 	; imgurs API endpoint
 	static Endpoint := "https://api.imgur.com/3/"

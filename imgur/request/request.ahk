@@ -11,7 +11,7 @@
 		__New(URL, Callback, Debug := "") {
 			if !this.Script {
 				try
-					this.base.Script := FileOpen(A_LineFile "\..\requestthread.ahk", "r").Read()
+					this.base.Script := FileOpen(A_LineFile "\..\RequestThread.ahk", "r").Read()
 				catch e
 					throw Exception("Failed reading thread script data", -1)
 			}

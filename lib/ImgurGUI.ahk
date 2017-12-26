@@ -22,10 +22,25 @@
 	}
 */
 
+ImageToPath(Image) {
+	static Assoc := {"image/jpeg": "jpg"}
+	return "data/images/uploaded/" Image.id "." Assoc[Image.type]
+}
+
 Class ImgurGUI extends GuiBase {
+	__Delete() {
+		this.Destroy()
+		this.BitmapWorker.Queue := ""
+		ahkthread_free(this.BitmapWorker.Thread)
+		this.BitmapWorker.Thread := ""
+		this.BitmapWorker := ""
+	}
+	
 	Init() {
-		
-		;this.BitmapLoader := AhkThread()
+		try
+			this.BitmapWorker := new BitmapWorker(Settings.Image.Width, Settings.Image.Height)
+		catch e
+			throw "Failed starting BitmapWorker."
 		
 		this.BackgroundColor := 0x161616
 		
@@ -36,18 +51,29 @@ Class ImgurGUI extends GuiBase {
 		this.ImageLV.ModifyCol(2, 0)
 		this.ImageLV.SetImageList(new CustomImageList(Settings.Image.Width, Settings.Image.Height, 0x20))
 		
-		Loop 20
-			this.ImageAdd(A_ScriptDir "\pic.jpg")
+		for Index, Image in Images.Object() {
+			if (A_Index > 20)
+				break
+			this.AddImage(Image)
+		}
 	}
 	
-	ImageAdd(File) {
+	AddImage(Image, Top := false) {
+		this.BitmapWorker.Add(ImageToPath(Image), this.AddImageCallback.Bind(this, Image, Top))
+	}
+	
+	AddImageCallback(Image, Top, pBitmap) {
 		static SpacingSet := false
 		
-		if !Icon := this.ImageLV.IL.AddFile(File) {
+		if !Icon := this.ImageLV.IL.AddBitmap(pBitmap) {
 			Debug.Log(Exception("Couldn't add image to imagelist", -1, File))
 			return false
 		}
-		this.ImageLV.Insert(1, [{Icon: Icon}],, 1)
+		
+		if Top
+			this.ImageLV.Insert(1, [{Icon: Icon}],, Image.id)
+		else
+			this.ImageLV.Add([{Icon: Icon}],, Image.id)
 		
 		if !SpacingSet {
 			LV_EX_SetIconSpacing(this.ImageLV.hwnd, Settings.Image.Width + Settings.Image.Spacing, Settings.Image.Height + Settings.Image.Spacing)
@@ -55,6 +81,8 @@ Class ImgurGUI extends GuiBase {
 		}
 		
 		this.FixOrder()
+		
+		this.BitmapWorker.Next(true)
 	}
 	
 	Show(Options := "") {
@@ -62,8 +90,10 @@ Class ImgurGUI extends GuiBase {
 	}
 	
 	FixOrder() {
+		this.ImageLV.Options(["-Redraw"])
 		this.ImageLV.Options(["+Report"])
 		this.ImageLV.Options(["+Icon"])
+		this.ImageLV.Options(["+Redraw"])
 		;this.ImageLV.Modify(1, "Vis")
 	}
 	

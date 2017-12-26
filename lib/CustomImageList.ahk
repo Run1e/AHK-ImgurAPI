@@ -31,9 +31,9 @@
 	
 	AddBitmap(pBitmap) {
 		; get a resized bitmap
-		pBitmapResized := this.ScaleBitmap(pBitmap)
+		;pBitmapResized := this.ScaleBitmap(pBitmap)
 		; get handle
-		hBitmap:=Gdip_CreateHBITMAPFromBitmap(pBitmapResized)
+		hBitmap:=Gdip_CreateHBITMAPFromBitmap(pBitmap)
 		return this.Add(hBitmap)
 	}
 

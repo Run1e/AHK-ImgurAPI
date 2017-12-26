@@ -3,15 +3,15 @@
 Class GuiBase {
 	
 	; misc
-	#Include %A_LineFile%\..\pos.ahk
-	#Include %A_LineFile%\..\imagelist.ahk
+	#Include %A_LineFile%\..\Position.ahk
+	#Include %A_LineFile%\..\ImageList.ahk
 	
 	; controls
-	#Include %A_LineFile%\..\control.ahk
-	#Include %A_LineFile%\..\text.ahk
-	#Include %A_LineFile%\..\button.ahk
-	#Include %A_LineFile%\..\edit.ahk
-	#Include %A_LineFile%\..\listview.ahk
+	#Include %A_LineFile%\..\controls\ControlBase.ahk
+	#Include %A_LineFile%\..\controls\Text.ahk
+	#Include %A_LineFile%\..\controls\Button.ahk
+	#Include %A_LineFile%\..\controls\Edit.ahk
+	#Include %A_LineFile%\..\controls\ListView.ahk
 	
 	static Guis := {}
 	
@@ -32,6 +32,7 @@ Class GuiBase {
 		this.ahkid := "ahk_id" hwnd
 		
 		GuiBase.Guis[this.hwnd] := new indirectReference(this)
+		
 		this.Position := new GuiBase.WindowPosition(this.hwnd)
 		
 		this.DropFilesToggle(false) ; disable drag-drop by default

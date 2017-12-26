@@ -1,4 +1,4 @@
-﻿Class ListViewControl extends GuiBase.ControlType {
+﻿Class ListViewControl extends GuiBase.ControlBase {
 	Type := "ListView"
 	
 	Add(Options := "", Fields*) {

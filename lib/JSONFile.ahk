@@ -74,9 +74,7 @@ Class JSONFile {
 			for Key, Val in Param.1 {
 				if (A_Index > 1)
 					Param.2.Pop()
-				HasKey := Param.2.MaxIndex()
-						? this.Object()[Param.2*].HasKey(Key) 
-						: this.Object().HasKey(Key)
+				HasKey := Param.2.MaxIndex() ? this.Object()[Param.2*].HasKey(Key) : this.Object().HasKey(Key)
 				Param.2.Push(Key)
 				if IsObject(Val) && HasKey
 					this.Fill(Val, Param.2), Param.2.Pop()
@@ -85,7 +83,8 @@ Class JSONFile {
 			} return
 		}
 		
-		return Obj%Func%(this.Object(), Param*)
+		try
+			return Obj%Func%(this.Object(), Param*)
 	}
 	
 	__Set(Key, Val) {

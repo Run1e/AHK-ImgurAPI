@@ -3,7 +3,14 @@
 #Persistent
 #WarnContinuableException off
 
-global Client, Settings, IG, pToken
+; JSON
+global Settings, Images
+
+; GUIS
+global IG
+
+; misc
+global Client, pToken
 
 ; catch startup errors
 try
@@ -30,14 +37,15 @@ main() {
 	Settings.Fill(DefaultSettings())
 	Settings.Save(true)
 	
+	Images := new JSONFile("data/images.json")
+	Images.Fill([{id: "bwbgRxz", link: "https://i.imgur.com/bwbgRxz.jpg", type: "image/jpeg"}])
+	Images.Save(true)
+	
 	IG := new ImgurGUI("Imgur Uploader",, Func("P"))
 	IG.Show([{w: Settings.Window.Width, h: Settings.Window.Height}])
 	
 	Client := new Imgur(Settings.client_id, Func("p"))
 	Client.OnEvent("UploadProgress", IG.UploadProgress.Bind(IG))
-	;Client.Image("pic.jpg").Upload()
-	
-	
 }
 
 DefaultSettings() {
@@ -71,7 +79,11 @@ evnt(Image, Response, Error) {
 }
 
 Exit() {
-	Settings.Save(true)
+	IG.BitmapWorker := ""
+	IG := ""
+	Client := ""
+	Settings.Save(true), Settings := ""
+	Images.Save(true), Images := ""
 	Gdip_Shutdown(pToken)
 	ExitApp
 }
@@ -81,8 +93,8 @@ Print(x*) {
 }
 
 ; libs
-#Include imgur\client.ahk
-#Include gui\gui.ahk
+#Include imgur\Imgur.ahk
+#Include gui\GuiBase.ahk
 
 ; project
 #Include lib\ImgurGUI.ahk
@@ -92,6 +104,7 @@ Print(x*) {
 #Include lib\Debug.ahk
 #Include lib\Hotkey.ahk
 #Include lib\CustomImageList.ahk
+#Include lib\BitmapWorker.ahk
 
 ; third party
 #Include lib\third-party\Gdip.ahk
