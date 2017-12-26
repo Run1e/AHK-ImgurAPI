@@ -10,7 +10,7 @@ global Settings, Images
 global IG
 
 ; misc
-global Client, pToken
+global Client, App, pToken
 
 ; catch startup errors
 try
@@ -27,6 +27,8 @@ main() {
 	
 	Debug.Clear()
 	
+	App := {Name: "Imgur Uploader", Author: "RUNIE", Version: "0.1"}
+	
 	pToken := Gdip_Startup()
 	
 	if !FileExist("data")
@@ -38,14 +40,36 @@ main() {
 	Settings.Save(true)
 	
 	Images := new JSONFile("data/images.json")
-	Images.Fill([{id: "bwbgRxz", link: "https://i.imgur.com/bwbgRxz.jpg", type: "image/jpeg"}])
-	Images.Save(true)
+	/*
+		Images.Fill({2:{id: "89F8arh", link: "https://i.imgur.com/89F8arh.jpg", type: "image/jpeg"}})
+		m(Images.Object())
+		Images.Save(true)
+	*/
 	
-	IG := new ImgurGUI("Imgur Uploader",, Func("P"))
+	IG := new ImgurGUI("Imgur Uploader",, Func("p"))
 	IG.Show([{w: Settings.Window.Width, h: Settings.Window.Height}])
 	
-	Client := new Imgur(Settings.client_id, Func("p"))
-	Client.OnEvent("UploadProgress", IG.UploadProgress.Bind(IG))
+	/*
+		Client := new Imgur(Settings.client_id)
+		Client.Debug := Func("p")
+		Client.OnEvent("UploadProgress", IG.UploadProgress.Bind(IG))
+	*/
+	
+}
+
+rc(obj) {
+	a := ObjAddRef(obj)
+	ObjRelease(obj)
+	return a - 1
+}
+
+Alert(Title, Text := "") {
+	if (Settings.AlertMode = 2) {
+		if !StrLen(Text)
+			Text := Title, Title := App.Name
+		TrayTip, % Title, % Text
+	} else if (Settings.AlertMode = 1)
+		SoundPlay *64
 }
 
 DefaultSettings() {
@@ -53,6 +77,8 @@ DefaultSettings() {
 	( LTrim Join
 	{
 		client_id: "45a0e7fa6727f61",
+		CopySeparator: "`n",
+		AlertMode: 2,
 		Image: {
 			Width: 256,
 			Height: 144,
@@ -66,10 +92,6 @@ DefaultSettings() {
 	)
 }
 
-OnProgress(Image, Current, Total) {
-	t(Current / Total)
-}
-
 evnt(Image, Response, Error) {
 	if Error {
 		m("Error", class(error), Error.Message)
@@ -80,7 +102,7 @@ evnt(Image, Response, Error) {
 
 Exit() {
 	IG.BitmapWorker := ""
-	IG := ""
+	IG.Destroy(), IG := ""
 	Client := ""
 	Settings.Save(true), Settings := ""
 	Images.Save(true), Images := ""
@@ -99,14 +121,14 @@ Print(x*) {
 ; project
 #Include lib\ImgurGUI.ahk
 #Include lib\JSONFile.ahk
-
-; misc
-#Include lib\Debug.ahk
-#Include lib\Hotkey.ahk
 #Include lib\CustomImageList.ahk
 #Include lib\BitmapWorker.ahk
 
+; misc
+#Include lib\IndirectReference.ahk
+#Include lib\Debug.ahk
+#Include lib\Hotkey.ahk
+
 ; third party
 #Include lib\third-party\Gdip.ahk
-#Include lib\third-party\indirectReference.ahk
 #Include lib\third-party\LV_EX.ahk

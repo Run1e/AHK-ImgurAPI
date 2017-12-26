@@ -52,12 +52,18 @@
 	
 	SetImageList(ImageList) {
 		this.SetDefault()
-		this.ImageList := this.IL := ImageList
+		this.ImageList := ImageList
 		return LV_SetImageList(this.ImageList.id, !ImageList.LargeIcons)
 	}
 	
 	SetDefault() {
 		this.Gui.SetDefault()
 		this.Gui.SetDefaultListView(this.hwnd)
+	}
+	
+	IL {
+		get {
+			return this.ImageList
+		}
 	}
 }

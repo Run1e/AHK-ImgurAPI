@@ -1,6 +1,6 @@
-﻿#Include %A_LineFile%\..\guievents.ahk
+﻿#Include %A_LineFile%\..\GuiEvents.ahk
 
-Class GuiBase {
+Class GuiBase extends IndirectReferenceCompatible {
 	
 	; misc
 	#Include %A_LineFile%\..\Position.ahk
@@ -12,42 +12,40 @@ Class GuiBase {
 	#Include %A_LineFile%\..\controls\Button.ahk
 	#Include %A_LineFile%\..\controls\Edit.ahk
 	#Include %A_LineFile%\..\controls\ListView.ahk
+	#Include %A_LineFile%\..\controls\StatusBar.ahk
 	
 	static Guis := {}
 	
 	Controls := []
 	
 	__New(Title := "AutoHotkey Window", Options := "", Debug := "") {
-		if !IsObject(indirectReference) {
-			run https://github.com/nnnik/indirectReference
-			throw "Missing dependency: indirectReference library by nnnik"
-		}
+		if !IsObject(IndirectReference)
+			throw "Missing dependency: IndirectReference"
 		
-		this.Title := Title
 		this.Debug := Debug
+		
+		this.TitleValue := Title
 		
 		Gui, New, % "+hwndhwnd " this.CraftOptions(Options), % this.Title
 		
 		this.hwnd := hwnd
 		this.ahkid := "ahk_id" hwnd
+		this.DropFilesToggle(false) ; disable drag-drop by default
 		
-		GuiBase.Guis[this.hwnd] := new indirectReference(this)
-		
+		GuiBase.Guis[this.hwnd] := new IndirectReference(this)
 		this.Position := new GuiBase.WindowPosition(this.hwnd)
 		
-		this.DropFilesToggle(false) ; disable drag-drop by default
-		this.Init()
+		this.New()
 		
 		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
-		this.Destroy()
 		this.Print(this.__Class " destroyed")
 	}
 	
 	Print(x*) {
-		try this.Debug.Call(x*)
+		this.Debug.Call(x*)
 	}
 	
 	Show(Options := "") {
@@ -59,9 +57,9 @@ Class GuiBase {
 	}
 	
 	Destroy() {
+		try Gui % this.hwnd ":Destroy"
 		this.Controls := ""
-		try
-			Gui % this.hwnd ":Destroy"
+		this.Delete()
 	}
 	
 	SetDefault() {
@@ -89,7 +87,7 @@ Class GuiBase {
 	Control(Command := "", Control := "", ControlParams := "") {
 		if IsObject(Control) {
 			if !Control.HasKey("hwnd")
-				throw this.__Class ".Control: provided control object has no hwnd attribute"
+				return ; fail silently? not sure
 			hwnd := Control.hwnd
 		} else
 			hwnd := Control
@@ -99,6 +97,10 @@ Class GuiBase {
 	
 	Margins(x := "", y := "") {
 		Gui % this.hwnd ":Margin", % x, % y
+	}
+	
+	Font(Options := "", Font := "") {
+		Gui % this.hwnd ":Font", % this.CraftOptions(Options), % Font
 	}
 	
 	Focus() {
@@ -119,6 +121,7 @@ Class GuiBase {
 		SendMessage, 0x80, 1, hIcon ,, % this.ahkid  ; the other the ALT+TAB menu
 	}
 	
+	
 	; ADD CONTROLS
 	
 	AddText(Options := "", Text := "") {
@@ -137,6 +140,10 @@ Class GuiBase {
 		for Index, Header in Headers
 			HeaderText .= "|" Header
 		return this.AddControl("ListView", Options, SubStr(HeaderText, 2))
+	}
+	
+	AddStatusBar(Options := "", Text := "") {
+		return this.AddControl("StatusBar", Options, Text)
 	}
 	
 	AddControl(Control, Options := "", Text := "") {
@@ -173,12 +180,10 @@ Class GuiBase {
 		}
 	}
 	
-	
-	
 	Title {
 		set {
 			WinSetTitle, % this.ahkid,, % value
-			this.TitleValue := value
+			return this.TitleValue := value
 		}
 		
 		get {

@@ -1,11 +1,13 @@
 ﻿GuiClose(GuiHwnd) {
-	if Gui := GuiBase.GetGui(GuiHwnd)
-		return Gui.Close.Call(Gui)
+	if Gui := GuiBase.GetGui(GuiHwnd) 
+		Gui.Close.Call(Gui)
+	
 }
 
 GuiEscape(GuiHwnd) {
 	if Gui := GuiBase.GetGui(GuiHwnd)
-		return Gui.Escape.Call(Gui)
+		Gui.Escape.Call(Gui)
+	
 }
 
 GuiSize(GuiHwnd, EventInfo, Width, Height) {
@@ -19,6 +21,6 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 }
 
 GuiContextMenu(GuiHwnd, CtrlHwnd, EventInfo, IsRightClick, X, Y) {
-	if Gui GuiBase.GetGui(GuiHwnd)
+	if Gui := GuiBase.GetGui(GuiHwnd)
 		return Gui.ContextMenu.Call(Gui, CtrlHwnd, EventInfo, IsRightClick, X, Y)
 }

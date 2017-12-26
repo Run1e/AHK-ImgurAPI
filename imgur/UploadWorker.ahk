@@ -4,7 +4,7 @@
 	ThreadFile := A_LineFile "\..\UploadThread.ahk"
 	
 	__New(Client) {
-		this.Client := new indirectReference(Client)
+		this.Client := new IndirectReference(Client)
 		
 		; throw WorkerLaunchFailure if we fail at reading the file
 		if !File := FileOpen(this.ThreadFile, "r")

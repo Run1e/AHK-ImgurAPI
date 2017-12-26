@@ -9,12 +9,7 @@ SetBatchLines -1
 finished := true
 return
 
-CreateBitmap(x*) {
-	func := Func("CreateBitmapGo").Bind(x*)
-	SetTimer % func, -1
-}
-
-CreateBitmapGo(File, Callback, Width, Height) {
+CreateBitmap(File, Callback, Width, Height) {
 	Callback := ObjShare(Callback)
 	pBitmap := Gdip_CreateBitmapFromFile(File)
 	if (pBitmap < 1) ; failed at creating bitmap from file
@@ -22,6 +17,7 @@ CreateBitmapGo(File, Callback, Width, Height) {
 	pResizedBitmap := ScaleBitmap(pBitmap, Width, Height)
 	Gdip_DisposeImage(pBitmap)
 	Callback.Call(pResizedBitmap)
+	Callback := ""
 }
 
 ScaleBitmap(pBitmap, Width, Height) {

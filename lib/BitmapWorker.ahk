@@ -12,14 +12,22 @@ Class BitmapWorker extends Imgur.Queue {
 		
 		this.Width := Width
 		this.Height := Height
+		
+		this.Ref := new IndirectReference(this)
 	}
 	
 	__Delete() {
-		m("sup")
+		ahkthread_free(this.BitmapWorker.Thread)
+		this.BitmapWorker.Thread := ""
+		this.Print(this.__Class " destroyed")
+	}
+	
+	Print(x*) {
+		this.Debug.Call(x*)
 	}
 	
 	Add(File, Callback) { ; *to queue
-		this.AddQueue(this.Go.Bind(this, File, Callback, this.Width, this.Height))
+		this.AddQueue(this.Ref.Go.Bind(this.Ref, File, Callback, this.Width, this.Height))
 		this.Next()
 	}
 	

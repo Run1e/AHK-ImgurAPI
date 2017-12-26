@@ -1,18 +1,15 @@
 ﻿Class ControlBase {
 	__New(Gui, Options := "", Text := "") {
-		this.Gui := new indirectReference(Gui)
+		this.Gui := GuiBase.GetGui(Gui.hwnd)
 		
 		Gui % this.Gui.hwnd ":Add", % this.Type, % "hwndhwnd " Options, % Text
 		this.hwnd := hwnd
 		this.Position := new GuiBase.ControlPosition(this.hwnd)
 		
-		this.Init()
-		
 		this.Gui.Print(this.__Class " created")
 	}
 	
 	__Delete() {
-		GuiControl, -g, % this.hwnd
 		this.Gui.Print(this.__Class " destroyed")
 	}
 	
@@ -41,8 +38,8 @@
 	
 	OnEvent(Func := "") {
 		if Func
-			GuiControl, +g, % this.hwnd, % Func
+			this.Gui.Control("+g", this.hwnd, Func)
 		else
-			GuiControl, -g, % this.hwnd
+			this.Gui.Control("-g", this.hwnd)
 	}
 }

@@ -1,4 +1,4 @@
-﻿Class Queue {
+﻿Class Queue extends IndirectReferenceCompatible {
 	Queue := []
 	Busy := false
 	
@@ -10,7 +10,6 @@
 		; remove the last queue item if told to
 		if Pop
 			this.Queue.RemoveAt(1)
-		
 		
 		if this.Queue.Length() {
 			if !this.Busy or Pop {

@@ -4,7 +4,7 @@
 	static Extensions := ["JPG", "JPEG", "PNG", "GIF", "APNG", "TIFF", "PDF"]
 	
 	__New(Client, FileOrID := "") {
-		this.Client := new indirectReference(Client)
+		this.Client := new IndirectReference(Client)
 		
 		; do file checks if a file is specified.
 		if FileExist(FileOrID) {

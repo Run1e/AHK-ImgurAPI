@@ -4,6 +4,7 @@
 
 m(x*) {
 	msgbox % disp(x*)
+	
 }
 
 p(x*) {
@@ -46,9 +47,11 @@ Class Debug {
 	Clear() {
 		this.Pane.Clear()
 	}
+	
 	Show() {
 		this.Pane.Show()
 	}
+	
 	Hide() {
 		this.Pane.Hide()
 	}

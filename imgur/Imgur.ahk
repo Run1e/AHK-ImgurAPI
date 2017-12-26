@@ -2,7 +2,7 @@
 #Include %A_LineFile%\..\lib\JSON.ahk
 #Include %A_LineFile%\..\request\request.ahk
 
-Class Imgur {
+Class Imgur extends IndirectReferenceCompatible {
 	
 	; misc
 	#Include %A_LineFile%\..\Errors.ahk
@@ -13,11 +13,9 @@ Class Imgur {
 	; imgurs API endpoint
 	static Endpoint := "https://api.imgur.com/3/"
 	
-	__New(client_id, Debug := "") {
-		if !IsObject(indirectReference) {
-			run https://github.com/nnnik/indirectReference
-			throw "Missing dependency: indirectReference library by nnnik"
-		}
+	__New(client_id) {
+		if !IsObject(IndirectReference)
+			throw "Missing dependency: IndirectReference"
 		
 		this.apikey := client_id
 		this.Debug := Debug
@@ -35,12 +33,12 @@ Class Imgur {
 		; create the image upload worker
 		this.Uploader := new Imgur.UploadWorker(this)
 		
-		this.Print(this.__Class " created")
+		this.Print(class(this) " created")
 	}
 	
 	__Delete() {
 		this.Uploader := ""
-		this.Print(this.__Class " destroyed")
+		this.Print(class(this) " destroyed")
 	}
 	
 	Print(x*) {
