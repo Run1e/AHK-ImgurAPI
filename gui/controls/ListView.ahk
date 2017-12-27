@@ -58,7 +58,7 @@
 	
 	SetDefault() {
 		this.Gui.SetDefault()
-		this.Gui.SetDefaultListView(this.hwnd)
+		this.Gui.SetDefaultListView(this)
 	}
 	
 	IL {

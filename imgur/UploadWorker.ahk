@@ -10,11 +10,8 @@
 		if !File := FileOpen(this.ThreadFile, "r")
 			throw new Imgur.WorkerLaunchFailure("Failed opening " this.ThreadFile)
 		
-		this.Queue := []
-		this.Busy := false
-		
 		; read the file contents and close file object
-		this.Script := "global Endpoint := """ this.Client.Endpoint """`nglobal client_id := """ this.Client.apikey """`n" File.Read()
+		this.Script := "global Endpoint := """ this.Client.Endpoint """`nglobal client_id := """ this.Client.id """`n" File.Read()
 		File.Close()
 		
 		; launch thread

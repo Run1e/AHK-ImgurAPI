@@ -1,6 +1,6 @@
 ﻿#Include %A_LineFile%\..\GuiEvents.ahk
 
-Class GuiBase extends IndirectReferenceCompatible {
+Class GuiBase {
 	
 	; misc
 	#Include %A_LineFile%\..\Position.ahk
@@ -22,26 +22,25 @@ Class GuiBase extends IndirectReferenceCompatible {
 		if !IsObject(IndirectReference)
 			throw "Missing dependency: IndirectReference"
 		
-		this.Debug := Debug
-		
 		this.TitleValue := Title
+		this.Debug := Debug
 		
 		Gui, New, % "+hwndhwnd " this.CraftOptions(Options), % this.Title
 		
 		this.hwnd := hwnd
 		this.ahkid := "ahk_id" hwnd
 		this.DropFilesToggle(false) ; disable drag-drop by default
-		
-		GuiBase.Guis[this.hwnd] := new IndirectReference(this)
 		this.Position := new GuiBase.WindowPosition(this.hwnd)
 		
-		this.New()
+		this.SafeReference := GuiBase.Guis[this.hwnd] := new IndirectReference(this)
+		
+		this.Init()
 		
 		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
-		this.Print(this.__Class " destroyed")
+		this.Print(this.__Class " released")
 	}
 	
 	Print(x*) {
@@ -59,7 +58,7 @@ Class GuiBase extends IndirectReferenceCompatible {
 	Destroy() {
 		try Gui % this.hwnd ":Destroy"
 		this.Controls := ""
-		this.Delete()
+		this.Release()
 	}
 	
 	SetDefault() {
@@ -167,6 +166,12 @@ Class GuiBase extends IndirectReferenceCompatible {
 	Pos {
 		get {
 			return this.Position
+		}
+	}
+	
+	SafeRef {
+		get {
+			return this.SafeReference
 		}
 	}
 	

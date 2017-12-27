@@ -27,7 +27,7 @@
 	}
 	
 	__Delete() {
-		this.Print(this.__Class " destroyed")
+		this.Print(this.__Class " released")
 	}
 	
 	Print(x*) {
@@ -90,7 +90,7 @@
 		; form a new request
 		Req := new Request.Get(this.Client.Endpoint "image/" this.id , this.GetResponse.Bind(this, Callback), this.Client.Print.Bind(this.Client))
 		; add the auth header
-		Req.SetHeader("Authorization", "Client-ID " this.Client.apikey)
+		Req.SetHeader("Authorization", "Client-ID " this.Client.id)
 		; send the request
 		Req.Send()
 	}

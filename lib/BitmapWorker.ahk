@@ -1,7 +1,7 @@
 ﻿; this uses the Imgur.Queue bundled with the Imgur library.
 
 Class BitmapWorker extends Imgur.Queue {
-	__New(Width, Height) {
+	__New(Width, Height, Debug := "") {
 		try {
 			this.Thread := AhkThread(FileOpen("lib\BitmapThread.ahk", "r").Read())
 			Loop 30
@@ -10,24 +10,33 @@ Class BitmapWorker extends Imgur.Queue {
 		} catch e
 			throw Exception("Failed starting BitmapThread", {Error: e})
 		
+		this.SafeReference := new IndirectReference(this)
+		
 		this.Width := Width
 		this.Height := Height
+		this.Debug := Debug
 		
-		this.Ref := new IndirectReference(this)
+		this.Print(this.__Class " created")
 	}
 	
 	__Delete() {
 		ahkthread_free(this.BitmapWorker.Thread)
 		this.BitmapWorker.Thread := ""
-		this.Print(this.__Class " destroyed")
+		this.Print(this.__Class " released")
+	}
+	
+	SafeRef {
+		get {
+			return this.SafeReference
+		}
 	}
 	
 	Print(x*) {
 		this.Debug.Call(x*)
-	}
+	} 
 	
 	Add(File, Callback) { ; *to queue
-		this.AddQueue(this.Ref.Go.Bind(this.Ref, File, Callback, this.Width, this.Height))
+		this.AddQueue(this.SafeRef.Go.Bind(this.SafeRef, File, Callback, this.Width, this.Height))
 		this.Next()
 	}
 	

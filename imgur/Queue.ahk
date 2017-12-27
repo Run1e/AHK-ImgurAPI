@@ -1,4 +1,4 @@
-﻿Class Queue extends IndirectReferenceCompatible {
+﻿Class Queue {
 	Queue := []
 	Busy := false
 	
@@ -16,7 +16,6 @@
 				this.Busy := true
 				Func := this.Queue[1]
 				SetTimer % Func, -1
-				;t(this.Queue.MaxIndex())
 			}
 		} else {
 			this.Busy := false

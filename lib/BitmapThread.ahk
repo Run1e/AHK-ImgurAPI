@@ -17,7 +17,6 @@ CreateBitmap(File, Callback, Width, Height) {
 	pResizedBitmap := ScaleBitmap(pBitmap, Width, Height)
 	Gdip_DisposeImage(pBitmap)
 	Callback.Call(pResizedBitmap)
-	Callback := ""
 }
 
 ScaleBitmap(pBitmap, Width, Height) {

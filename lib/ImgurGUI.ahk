@@ -31,19 +31,16 @@ GetImage(id) {
 	for Index, Image in Images.Object()
 		if (Image.id = id)
 			return Image
-	
+		
 	Debug.Log(Exception(A_ThisFunc " failed for " id))
 }
 
 Class ImgurGUI extends GuiBase {
-	New() {
+	Init() {
 		try
-			this.BitmapWorker := new BitmapWorker(Settings.Image.Width, Settings.Image.Height)
+			this.BitmapWorker := new BitmapWorker(Settings.Image.Width, Settings.Image.Height, this.Debug)
 		catch e
 			throw "Failed starting BitmapWorker."
-		
-		this.Debug := Func("p")
-		this.BitmapWorker.Debug := this.Debug
 		
 		this.BackgroundColor := 0x161616
 		
@@ -55,15 +52,23 @@ Class ImgurGUI extends GuiBase {
 		this.ImageLV.ModifyCol(2, 0)
 		this.ImageLV.SetImageList(new CustomImageList(Settings.Image.Width, Settings.Image.Height, 0x20))
 		
-		this.Font([{s:11}])
+		this.Font([{s: 11}])
+		
+		this.QueueLV := this.AddListView([{x: 0, y: 0, Background: "0x161616"}, "-Border"], ["File", "Status"])
+		this.QueueLV.Pos.W := 400
+		this.QueueLV.ModifyCol(1, 300)
+		this.QueueLV.ModifyCol(2, 100 - 4)
 		
 		this.Status := this.AddStatusBar()
 		this.Status.Pos.W := 23
 		this.Status.SetParts(0, 0)
 		this.Status.SetText("Imgur Uploader by RUNIE", 1)
 		
+		; tab 1, hotkeys
 		
-		Loop 4 {
+		; tab 2, settings
+		
+		Loop 6 {
 			for Index, Image in Images.Object() {
 				if (A_Index > 20)
 					break
@@ -72,10 +77,26 @@ Class ImgurGUI extends GuiBase {
 		}	
 	}
 	
-	Delete() {
-		this.BitmapWorker := ""
+	Release() {
 		this.ImageLV := ""
 		this.Status := ""
+		this.BitmapWorker := ""
+	}
+	
+	Size(EventInfo, Width, Height) {
+		this.ImageLV.Pos.W := Width - 400
+		this.ImageLV.Pos.H := Height - 23
+		
+		this.QueueLV.Pos.X := Width - 400
+		this.QueueLV.Pos.Y := 420 - 23
+		this.QueueLV.Pos.H := Height - 420
+		
+		this.Status.SetParts(200, Width - 200)
+		
+		Settings.Window.Width := Width
+		Settings.Window.Height := Height
+		Settings.Window.State := EventInfo
+		this.FixOrder()
 	}
 	
 	ImageLVEvent(hwnd, Event, LVPos) {
@@ -103,8 +124,7 @@ Class ImgurGUI extends GuiBase {
 	}
 	
 	AddImage(Image, Top := false) {
-		Gui := this.GetGui(this.hwnd)
-		this.BitmapWorker.Add(ImageToPath(Image), Gui.AddImageCallback.Bind(Gui, Image, Top))
+		this.BitmapWorker.Add(ImageToPath(Image), this.SafeRef.AddImageCallback.Bind(this.SafeRef, Image, Top))
 	}
 	
 	AddImageCallback(Image, Top, pBitmap) {
@@ -142,18 +162,6 @@ Class ImgurGUI extends GuiBase {
 	
 	UploadProgress(Image, Current, Total) {
 		t(Image, Current/Total)
-	}
-	
-	Size(EventInfo, Width, Height) {
-		this.ImageLV.Pos.W := Width - 250
-		this.ImageLV.Pos.H := Height - 23
-		
-		this.Status.SetParts(200, Width - 200)
-		
-		Settings.Window.Width := Width
-		Settings.Window.Height := Height
-		Settings.Window.State := EventInfo
-		this.FixOrder()
 	}
 	
 	Escape() {

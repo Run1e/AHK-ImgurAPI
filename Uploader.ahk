@@ -7,7 +7,7 @@
 global Settings, Images
 
 ; GUIS
-global IG
+global IG, asdf
 
 ; misc
 global Client, App, pToken
@@ -49,18 +49,9 @@ main() {
 	IG := new ImgurGUI("Imgur Uploader",, Func("p"))
 	IG.Show([{w: Settings.Window.Width, h: Settings.Window.Height}])
 	
-	/*
-		Client := new Imgur(Settings.client_id)
-		Client.Debug := Func("p")
-		Client.OnEvent("UploadProgress", IG.UploadProgress.Bind(IG))
-	*/
-	
-}
-
-rc(obj) {
-	a := ObjAddRef(obj)
-	ObjRelease(obj)
-	return a - 1
+	Client := new Imgur(Settings.client_id, Func("p"))
+	Client.Debug := Func("p")
+	Client.OnEvent("UploadProgress", IG.SafeRef.UploadProgress.Bind(IG.SafeRef))
 }
 
 Alert(Title, Text := "") {
@@ -101,7 +92,6 @@ evnt(Image, Response, Error) {
 }
 
 Exit() {
-	IG.BitmapWorker := ""
 	IG.Destroy(), IG := ""
 	Client := ""
 	Settings.Save(true), Settings := ""
@@ -110,8 +100,11 @@ Exit() {
 	ExitApp
 }
 
-Print(x*) {
-	p(x*)
+RefCount(obj) {
+	ptr := &obj, obj := ""
+	count := ObjAddRef(ptr)
+	ObjRelease(ptr)
+	return count - 1
 }
 
 ; libs
@@ -132,3 +125,4 @@ Print(x*) {
 ; third party
 #Include lib\third-party\Gdip.ahk
 #Include lib\third-party\LV_EX.ahk
+#Include lib\third-party\LV_Colors.ahk
