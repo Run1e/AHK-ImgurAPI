@@ -10,13 +10,20 @@ finished := true
 return
 
 CreateBitmap(File, Callback, Width, Height) {
+	
 	Callback := ObjShare(Callback)
 	pBitmap := Gdip_CreateBitmapFromFile(File)
+	
 	if (pBitmap < 1) ; failed at creating bitmap from file
 		return Callback.Call(false)
+	
 	pResizedBitmap := ScaleBitmap(pBitmap, Width, Height)
 	Gdip_DisposeImage(pBitmap)
-	Callback.Call(pResizedBitmap)
+	
+	try
+		Callback.Call(pResizedBitmap)
+	catch e
+		ExitApp
 }
 
 ScaleBitmap(pBitmap, Width, Height) {

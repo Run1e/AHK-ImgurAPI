@@ -107,7 +107,8 @@ Class Debug {
 		static Open := "["
 		static Close := "]"
 		static Arrow := " -> "
-		static TopSplit := "`n"
+		static TopSplit := ""
+		static Ignore := ["Client", "SafeReference", "SafeRef", "Gui"]
 		
 		Call(Print*) {
 			for Index, Value in Print
@@ -120,6 +121,9 @@ Class Debug {
 				Seen := [], Top := true
 			try {
 				for Key, Value in Object {
+					for Index, Val in this.Ignore
+						if (Key = Val)
+							continue
 					out .= "`n" Indent this.Open Key this.Close
 					if IsFunc(Value)
 						out .= this.Arrow Value.Name

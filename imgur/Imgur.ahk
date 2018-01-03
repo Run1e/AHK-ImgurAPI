@@ -45,12 +45,33 @@ Class Imgur {
 		this.Debug.Call(x*)
 	}
 	
-	; shorthand for new Imgur.ImageType(Instance, File)
+	/*
+		shorthand for new Imgur.ImageType(Instance, File)
+	
+		
+		throws:
+		Imgur.FileTypeError - incompatible file type
+		Imgur.FileSizeError - file size too large
+	*/
 	Image(FileOrID := "") {
 		return new Imgur.ImageType(this, FileOrID)
 	}
 	
-	; upload image
+	ImageFromObj(Obj) {
+		Image := this.Image()
+		for Key, Value in Obj
+			Image[Key] := Value
+		return Image
+	}
+	
+	/*
+		UPLOAD IMAGE
+		
+		throws:
+		Imgur.FileError - on bad file type
+		Imgur.ClientMismatch - on client mismatch between this and Image client
+		Imgur.MissingFileError - file specified by Image doesn't exist
+	*/
 	Upload(Image, Callback := "") {
 		; check the Image parameter is an Image type
 		if !isinstance(Image, Imgur.ImageType)
@@ -90,12 +111,6 @@ Class Imgur {
 	
 	/*
 		!!! PRIVATE METHODS !!!
-	*/
-	
-	/*
-		if the only error is a json error, that will be our error
-			
-		if resp.error exists, that will be our error since it'll be critical
 	*/
 	
 	ParseResponse(Resp) {

@@ -14,13 +14,8 @@
 			if !ArrayHasValue(this.Extensions, Ext)
 				throw new Imgur.FileTypeError(Ext)
 			
-			; make sure file is under 10mb large
-			FileGetSize, Size, % FileOrID
-			if (Size > 10480000)
-				throw new Imgur.FileSizeError(Size)
-			
 			this.File := FileOrID
-		} else 
+		} else
 			this.id := FileOrID
 		
 		this.Print(this.__Class " created")
@@ -48,6 +43,11 @@
 		if !FileExist(this.File)
 			throw new Imgur.MissingFileError(this.File)
 		
+		; make sure file is under 10mb large
+		FileGetSize, Size, % FileOrID
+		if (Size > 10480000)
+			throw new Imgur.FileSizeError(Size)
+		
 		; pass the Image and the (potential) callback to the Uploader
 		this.Client.Uploader.Upload(this, Callback)
 	}
@@ -58,25 +58,14 @@
 	
 	UploadResponse(Callback, Data, Header, Error) {
 		; get the exception object if there is one
-		if Error {
-			Error := ObjShare(Error)
-			this.Client.Print(A_ThisFunc ": Error when uploading - " Error.Message)
-			this.Client.CallEvent("UploadResponse", Callback, this, Error)
-			return
-		}
+		Result := this.Client.ParseResponse(Resp)
 		
-		; try to get the JSON encoded data, raise BadResponse if the data is unreadable
-		try
-			DataObj := JSON.Load(Data)
-		catch e
-			throw new Imgur.BadResponse(e.Message)
+		if !Result.Error
+			for Key, Value in Result.Data
+				this[Key] := Value
 		
-		; put the data k/v pairs in the Image instance
-		for Key, Value in DataObj.data
-			this[Key] := Value
-		
-		; call the event (or callback)
-		this.Client.CallEvent("UploadResponse", Callback, this, false)
+		; call event
+		this.Client.CallEvent("GetImageResponse", Callback, this, Resp, Result.Error)
 		
 		this.Client.Uploader.Next(true)
 	}
@@ -105,6 +94,6 @@
 				this[Key] := Value
 		
 		; call event
-		this.Client.CallEvent("GetImageResponse", Callback, this, Resp, Result.Error)
+		this.Client.CallEvent("GetImageResponse", Callback, (this, this.Delete("Client")), Resp, Result.Error)
 	}
 }

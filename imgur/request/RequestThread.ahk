@@ -1,72 +1,41 @@
 ﻿#SingleInstance force
 #Persistent
 
-global HTTP := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-global Info := {Headers: {}}
-Ready := true
+global Ready := true
 return
 
-AddHeader(Header, Value) {
-	Info.Headers[Header] := Value
-}
-
-SetMethod(Method) {
-	Info.Method := Method
-}
-
-SetURL(URL) {
-	Info.URL := URL
-}
-
-SetTimeout(Timeout) {
-	Info.Timeout := Timeout
-}
-
-SetResponse(ResponseShare) {
-	Info.Response := ObjShare(ResponseShare)
-}
-
-Send() {
+Send(RequestShare) {
 	try {
-		HTTP.Open(Info.Method, Info.URL, true)
+		Request := ObjShare(RequestShare)
 		
-		for Header, Value in Info.Headers
+		HTTP := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+		
+		HTTP.Open(Request.Method, Request.URL, true)
+		
+		Request.PutHeaders(ObjShare(Headers := {}))
+		
+		for Header, Value in Headers
 			HTTP.SetRequestHeader(Header, Value)
 		
 		HTTP.Send()
 		
-		if !HTTP.WaitForResponse(Info.Timeout)
-			Error(Exception("Info timed out.", -1))
+		if !HTTP.WaitForResponse(Request.Timeout)
+			throw Exception("Request timed out.", -1, "Timeout: " Request.Timeout)
 		
 		for Index, Value in ["Status", "StatusText", "ResponseText"]
-			Info.Response[Value] := HTTP[Value]
+			Request.Response[Value] := HTTP[Value]
 		
 		for Index, Signature in StrSplit(HTTP.GetAllResponseHeaders(), "`n") {
 			HDR := StrSplit(Signature, ": ")
 			Header := trim(HDR.1, "`t`r`n")
 			Value := trim(HDR.2, "`t`r`n")
 			if StrLen(Header)
-				Info.Response.Headers[Header] := Value
+				Request.Response.Headers[Header] := Value
 		}
 	} catch e
-		Error(e)
+		Request.Response.Error := e
 	
-	Go()
-}
-
-Error(Error) {
-	Info.Response.SetError(ObjShare(Error))
-	Exit()
-}
-
-Go() {
-	Info.Response.Go()
-	Exit()
-}
-
-Exit() {
-	Info := ""
-	ExitApp
+	Request.ThreadCallback()
 }
 
 UriEncode(Uri) {

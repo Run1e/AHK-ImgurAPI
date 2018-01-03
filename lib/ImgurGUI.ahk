@@ -160,8 +160,17 @@ Class ImgurGUI extends GuiBase {
 		;this.ImageLV.Modify(1, "Vis")
 	}
 	
+	ImgurResponse(Image, Response, Error) {
+		if Error {
+			m("Error", class(error), Error.Message)
+			return
+		}
+		
+		m(Image)
+	}
+	
 	UploadProgress(Image, Current, Total) {
-		t(Image, Current/Total)
+		t(Current/Total)
 	}
 	
 	Escape() {

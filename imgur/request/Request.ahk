@@ -1,4 +1,17 @@
 ﻿Class Request {
+	static _Init := Request.Init()
+	
+	SetDebug(Func) {
+		this.RequestBase.Debug := Func
+	}
+	
+	Init() {
+		try
+			Request.RequestBase.Script := FileOpen(A_LineFile "\..\RequestThread.ahk", "r").Read()
+		catch e
+			throw Exception(this.__Class " init failure", -1, e.Message)
+	}
+	
 	Class Get extends Request.RequestBase {
 		Method := "GET"
 	}
@@ -8,18 +21,11 @@
 	}
 	
 	Class RequestBase {
-		__New(URL, Callback, Debug := "") {
-			if !this.Script {
-				try
-					this.base.Script := FileOpen(A_LineFile "\..\RequestThread.ahk", "r").Read()
-				catch e
-					throw Exception("Failed reading thread script data", -1)
-			}
-			
+		__New(URL, Callback) {
 			this.URL := URL
+			this.Timeout := 5
 			this.Callback := Callback
 			this.Headers := {}
-			this.Debug := Debug
 			
 			this.Print(this.__Class " created: " URL)
 		}
@@ -37,52 +43,56 @@
 			this.Print(this.__Class ".SetHeader: " Header " -> " Value)
 		}
 		
+		; put headers into a remote object
+		PutHeaders(ObjShare) {
+			Obj := ObjShare(ObjShare)
+			for Header, Value in this.Headers
+				Obj[Header] := Value
+		}
+		
 		Send() {
 			this.Thread := AhkThread(this.Script)
 			
-			while !(this.Thread.ahkgetvar.Ready)
-				continue
+			/*
+				while !(this.Thread.ahkgetvar.Ready)
+					continue
+			*/
 			
-			Response := new Request.Response(this.Callback, this.Debug)
+			sleep 100
+			
+			this.Response := {Headers: {}}
+			thisShare := ObjShare(this)
+			
+			this.Thread.ahkPostFunction("Send", thisShare)
+			
+			this.Print(this.__Class ".Send: " this.URL)
+		}
+		
+		ThreadCallback() {
+			Response := this.Response
+			this.Response := ""
 			Response.Request := this
-			ResponseShare := ObjShare(Response)
-			
-			this.Thread.ahkFunction("SetResponse", ResponseShare)
-			this.Thread.ahkFunction("SetMethod", this.Method)
-			this.Thread.ahkFunction("SetURL", this.URL)
-			this.Thread.ahkFunction("SetTimeout", 10)
-			
-			for Header, Value in this.Headers
-				this.Thread.ahkFunction("AddHeader", Header, Value)
-			
-			this.Thread.ahkPostFunction("Send")
-			
-			this.Print(this.__Class ".Send")
-		}
-	}
-	
-	Class Response {
-		Headers := {}
-		
-		__New(Callback, Debug := "") {
-			this.Callback := Callback
-			this.Debug := Debug
-			
-			this.Debug.Call(this.__Class " created")
+			Error := Response.Delete("Error")
+			if IsObject(Error) {
+				Error :=
+				( LTrim Join
+				{
+					Message: Error.Message,
+					What: Error.What,
+					Extra: Error.Extra
+				}
+				)
+			}
+			; start a new thread here so we can safely free the worker thread
+			OnResponse := this.OnResponse.Bind(this, Response, Error)
+			SetTimer, % OnResponse, -1
 		}
 		
-		__Delete() {
-			this.Debug.Call(this.__Class " destroyed")
-		}
-		
-		SetError(Error) {
-			Error := ObjShare(Error)
-			this.Error := {Message: Error.Message, What: Error.What, Extra: Error.Extra}
-			this.Go()
-		}
-		
-		Go() {
-			this.Callback.Call(this)
+		OnResponse(Response, Error) {
+			ahkthread_free(this.Thread)
+			this.Thread := ""
+			this.Print(this.__Class ".OnResponse: " Response.Status " (" Response.StatusText ")")
+			this.Callback.Call(Response, Error)
 		}
 	}
 }

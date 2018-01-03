@@ -26,6 +26,7 @@ main() {
 	SetWorkingDir % A_ScriptDir
 	
 	Debug.Clear()
+	Request.SetDebug(Func("p"))
 	
 	App := {Name: "Imgur Uploader", Author: "RUNIE", Version: "0.1"}
 	
@@ -52,6 +53,18 @@ main() {
 	Client := new Imgur(Settings.client_id, Func("p"))
 	Client.Debug := Func("p")
 	Client.OnEvent("UploadProgress", IG.SafeRef.UploadProgress.Bind(IG.SafeRef))
+	Client.OnEvent("UploadResponse", IG.SafeRef.ImgurResponse.Bind(IG.SafeRef))
+	Client.OnEvent("GetImageResponse", IG.SafeRef.ImgurResponse.Bind(IG.SafeRef))
+	
+	Client.Image("89F8arh").Get(Func("ImageGet"))
+	
+	;Client.Image("pic.jpg").Upload()
+}
+
+ImageGet(Image, Response, Error) {
+	if Error
+		throw Error
+	m(Image)
 }
 
 Alert(Title, Text := "") {
@@ -81,14 +94,6 @@ DefaultSettings() {
 		}
 	}
 	)
-}
-
-evnt(Image, Response, Error) {
-	if Error {
-		m("Error", class(error), Error.Message)
-		return
-	}
-	m(Image)
 }
 
 Exit() {
